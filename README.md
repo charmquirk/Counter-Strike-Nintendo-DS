@@ -1,5 +1,5 @@
 # Counter Strike Nintendo DS
-**Counter Strike demake on Nintendo DS with online multiplayer** (Works on **emulator** and on **real hardware**).
+**Counter Strike demake on Nintendo DS with online multiplayer** (Works on **emulator** and on **real hardware**). Skip to "CharmQuirk TODO" If you want to see my proposed changes.
 
 For **multiplayer** on **emulator**, please use [melonDS](https://melonds.kuribo64.net/downloads.php).<br/>
 There is no emulator with **online** support on **Android** at this time.<br/>
@@ -56,18 +56,35 @@ To have sounds and music, you need to use a virtual SD card, because sounds and 
 
 Note : To avoid coding collisions, path finding..., there is an Unity project to export code : https://github.com/Fewnity/Counter-Strike-DS-Unity-Project
 
-## TODO
-- [ ] Ad hoc (Ni-Fi) multiplayer : **Difficult**
-- [ ] Disable sleep mode in multiplayer : **?**
-- [ ] Add fall damage : **Easy**
-- [ ] Smoke doesn't affect bots at this time : **Easy**
-- [ ] Online chat (empty menu already exists) : **Medium**
-- [ ] Create a NitroFS version for sounds and musics (and keep the FAT version for better compatibility) : **Medium**
-- [ ] Put data in JSON files (weapons/equipments/bots names/ai waypoints) : **Medium**
-- [ ] Add Wingman mode : **Medium**
-- [ ] Add input profiles : **Medium**
-- [ ] Possibility to change cursor : **Medium**
-- [ ] Add bot difficulty : **Medium/Difficult**
-- [ ] Translate system : **Medium/Difficult**
-- [ ] Add more maps : **Difficult**
-- [ ] Optimise the map with a tiled textures system instead of duplicate model faces : **Difficult**
+# CharmQuirk TODO
+I have a few changes I plan to make with my fork of this game:
+
+Improve UI
+[ ] Add screen with a button to skip tutorial.
+[ ] Put defuse bomb button on touch screen.
+[ ] Remove Jump from the touch screen.
+[ ] Add customizable inputs.
+[ ] Reorganize settings menu and add tabs.
+[ ] Reorganize the bottom screen. Put camo matching team color on bottom screen
+
+Improve input handling
+[ ] Add touch input aim acceleration curve. **Difficult**
+[ ] Normalizing movement vectors, preventing moving faster horizontally. **Difficult**
+[ ] Move movement code to the movement script. Take it OUT of the main function aka the main game loop. **Difficult**
+[ ] Add "double touch to jump" from Metroid Prime: Hunters DS.
+
+## Fewnity TODO
+[ ] Ad hoc (Ni-Fi) multiplayer : **Difficult**
+[ ] Disable sleep mode in multiplayer : **?**
+[ ] Add fall damage : **Easy**
+[ ] Smoke doesn't affect bots at this time : **Easy**
+[ ] Online chat (empty menu already exists) : **Medium**
+[ ] Create a NitroFS version for sounds and musics (and keep the FAT version for better compatibility) : **Medium**
+[ ] Put data in JSON files (weapons/equipments/bots names/ai waypoints) : **Medium**
+[ ] Add Wingman mode : **Medium**
+[ ] Add input profiles : **Medium**
+[ ] Possibility to change cursor : **Medium**
+[ ] Add bot difficulty : **Medium/Difficult**
+[ ] Translate system : **Medium/Difficult**
+[ ] Add more maps : **Difficult**
+[ ] Optimise the map with a tiled textures system instead of duplicate model faces : **Difficult**
