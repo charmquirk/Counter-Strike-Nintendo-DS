@@ -11,8 +11,7 @@
 #include "main.h"
 
 extern int updateRate;
-extern int xSpeedAdded;
-extern int zSpeedAdded;
+extern Vector2 movementVector; // Absolute movement vector.
 
 void MovePlayer(int CurrentSpeed, float xWithoutY, float zWithoutY, bool *NeedBobbing); /**/
 void RotatePlayer(bool *NeedUpdateViewRotation, bool *SendPosition, float *CameraAngleY);

@@ -114,7 +114,11 @@ void checkTutorial()
         break;
 
     case TextMovePlayer:
-        tutorialAddedValue += xSpeedAdded + zSpeedAdded;
+        if (inputVector != {})
+        {
+            tutorialAddedValue++;
+        }
+        
         if (tutorialAddedValue >= 110000)
         {
             nextStep();

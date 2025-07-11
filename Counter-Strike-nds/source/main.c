@@ -1171,7 +1171,7 @@ void GameLoop()
 			CurrentSpeed = getPlayerCurrentGun(localPlayer).WalkSpeed;
 
 		if (roundState != WAIT_START && !localPlayer->IsDead)
-			MovePlayer(CurrentSpeed, xWithoutY, zWithoutY, &NeedBobbing);
+			MovePlayer(CurrentSpeed, &NeedBobbing);
 
 		// Gun headbobing
 		if (NeedBobbing && (CanJumpRealTimer == 0 || CanJump > 0))

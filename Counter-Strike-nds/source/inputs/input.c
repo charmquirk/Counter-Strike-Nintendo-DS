@@ -112,9 +112,39 @@ void readKeys()
     keysdown = keysDown();
     keysup = keysUp();
     touchRead(&touch);
-
+    inputVector = getInputVector2();
     readKeyboard();
 }
+
+/**
+ * @brief Get horizontal movement inputs.
+ *
+ */
+Vector2<double> getInputVector2()
+{
+    int xAxisInput = (isKey(RIGHT_BUTTON) - isKey(LEFT_BUTTON)); // The right and left input axis. Considered "x" in input vector and the movement vector.
+    int zAxisInput = (isKey(UP_BUTTON) - isKey(DOWN_BUTTON)); // The forward and backward input axis. Considered "y" in input vector and "z" in the movement vector.
+
+    // Return if not inputting movement
+    if (xAxisInput != 0 && zAxisInput != 0)
+    {
+        return {};
+    }
+
+    // Calculate the point on the unit circle if moving diagonally
+    if (xAxisInput != 0 && zAxisInput != 0)
+    {
+        Vector2 newVector;
+        float magnitude = sqrtf(xAxisInput*xAxisInput + zAxisInput*zAxisInput); // The length of the input vector on a unit circle. Usually the sqrt of "2".
+        // Set the vector to the point on a circle with a diameter of 2.
+        newVector.x = (xAxisInput / magnitude) * 2;
+        newVector.y = (zAxisInput / magnitude) * 2;
+        return newVector;
+    }
+
+    return (xAxisInput, zAxisInput);
+}
+
 
 /**
  * @brief Read the touch screen
