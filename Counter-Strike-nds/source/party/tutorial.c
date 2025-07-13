@@ -114,7 +114,7 @@ void checkTutorial()
         break;
 
     case TextMovePlayer:
-        if (inputVector != {})
+        if (movementVector != {})
         {
             tutorialAddedValue++;
         }

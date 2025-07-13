@@ -19,7 +19,7 @@
 
 void initInputs();
 void readKeys();
-Vector2<double> getInputVector2();
+Vector3<double> getInputVector3();
 void ReadTouchScreen(touchPosition touch, bool *NeedChangeScreen, bool *AlwaysUpdateBottomScreen, int *ButtonToShow, int *UpdateBottomScreenOneFrame, bool *SendTeam, bool forceCheck);
 void ScanForInput();
 bool isKeyDown(enum inputButtons buttonName);
@@ -43,6 +43,6 @@ extern Input inputs[INPUT_COUNT];
 extern bool scanForInput;
 extern int currentInputScanned;
 extern const char *inputsNames[INPUT_NAMES_COUNT];
-extern Vector2 inputVector; // Relative input vector in relative to the player's position.
+extern Vector3 inputVector; // Relative input vector in relative to the player's position.
 
 #endif // INPUT_H_

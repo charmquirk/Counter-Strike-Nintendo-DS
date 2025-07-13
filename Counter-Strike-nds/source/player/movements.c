@@ -19,47 +19,31 @@ int zSpeedAdded = 0;
 int fovCheckAngle = 80;
 
 /**
- * @brief Move player according to his speed and direction
+ * @brief Move player according to their speed and direction
  *
  * @param CurrentSpeed Speed
- * @param xWithoutY X direction
- * @param zWithoutY Z direction
  * @param NeedBobbing Need to bobbing
  */
-void MovePlayer(int CurrentSpeed, float xWithoutY, float zWithoutY, bool *NeedBobbing)
+void MovePlayer(int CurrentSpeed, bool *NeedBobbing)
 {
-    int xAxisInput = (isKey(UP_BUTTON) - isKey(DOWN_BUTTON));
-
-    // Bob head when moving.
-    if (xAxisInput != 0 || zAxisInput != 0)
+    movementVector = {};
+    if (inputVector == {})
     {
-        *NeedBobbing = true;
+        return
     }
 
-    // Move Forward or Backward
-    if (xAxisInput != 0)
+    *NeedBobbing = true; // Bob head when moving.
+    movementVector = (inputVector.x * CurrentSpeed, 0, inputVector.z * CurrentSpeed);
+
+    if (inputVector.x != 0)
     {
-        localPlayer->PlayerPhysic->xspeed += xAxisInput * CurrentSpeed * xWithoutY * 2;
-        localPlayer->PlayerPhysic->zspeed += xAxisInput * CurrentSpeed * zWithoutY * 2;
-        
+        localPlayer->PlayerPhysic->xspeed += movementVector.x:
     }
 
-    // Move left/right
-    if (isKey(RIGHT_BUTTON))
+    if (inputVector.z != 0)
     {
-        localPlayer->PlayerPhysic->xspeed += CurrentSpeed * -zWithoutY * 2;
-        localPlayer->PlayerPhysic->zspeed += CurrentSpeed * xWithoutY * 2;
-
+        localPlayer->PlayerPhysic->zspeed += movementVector.z;
     }
-    else if (isKey(LEFT_BUTTON))
-    {
-        localPlayer->PlayerPhysic->xspeed += CurrentSpeed * zWithoutY * 2;
-        localPlayer->PlayerPhysic->zspeed += CurrentSpeed * -xWithoutY * 2;
-    }
-
-    // Total of speed
-    xSpeedAdded = abs(localPlayer->PlayerPhysic->xspeed);
-    zSpeedAdded = abs(localPlayer->PlayerPhysic->zspeed);
 }
 
 /**
