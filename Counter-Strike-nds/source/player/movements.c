@@ -31,16 +31,16 @@ void MovePlayer(int CurrentSpeed, bool *NeedBobbing)
     }
 
     *NeedBobbing = true; // Bob head when moving.
-    movementVector = (inputVector.x * CurrentSpeed, 0, inputVector.z * CurrentSpeed);
+    movementVector = (inputVector.x * CurrentSpeed, inputVector.y * CurrentSpeed);
 
     if (inputVector.x != 0)
     {
         localPlayer->PlayerPhysic->xspeed += movementVector.x:
     }
 
-    if (inputVector.z != 0)
+    if (inputVector.y != 0)
     {
-        localPlayer->PlayerPhysic->zspeed += movementVector.z;
+        localPlayer->PlayerPhysic->zspeed += movementVector.y;
     }
 }
 
