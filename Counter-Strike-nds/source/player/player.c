@@ -292,7 +292,7 @@ void SetGunInInventory(int Value, int inventoryIndex)
 {
     localPlayer->AllGunsInInventory[inventoryIndex] = Value;
     if (getPlayerCurrentGunIndex(localPlayer) == UNUSED) // If the player has no guns in hands
-        ChangeGunInInventoryForLocalPlayer(0);           // Switch to a gun in inventory
+        ChangeGunInInventoryForLocalPlayer(false);           // Switch to a gun in inventory
     else
     {
         // Refresh the gun texture and reset ammo
@@ -312,7 +312,7 @@ void SetGunInInventoryForNonLocalPlayer(int playerIndex, int Value, int inventor
 {
     AllPlayers[playerIndex].AllGunsInInventory[inventoryIndex] = Value;
     if (playerIndex == 0 && getPlayerCurrentGunIndex(localPlayer) == UNUSED) // If the player has no guns in hands
-        ChangeGunInInventoryForLocalPlayer(0);                               // Switch to a gun in inventory
+        ChangeGunInInventoryForLocalPlayer(false);                               // Switch to a gun in inventory
     else                                                                     // Reset ammo
         ResetGunAmmo(playerIndex, inventoryIndex);
 }
@@ -322,7 +322,7 @@ void SetGunInInventoryForNonLocalPlayer(int playerIndex, int Value, int inventor
  *
  * @param Left Way (1 - left, 0 - right)
  */
-void ChangeGunInInventoryForLocalPlayer(int Left)
+void ChangeGunInInventoryForLocalPlayer(bool Left)
 {
     DisableAim();
     ChangeGunInInventory(0, Left);
@@ -334,7 +334,7 @@ void ChangeGunInInventoryForLocalPlayer(int Left)
  * @param playerIndex Player index
  * @param Left Way (1 - left, 0 - right)
  */
-void ChangeGunInInventory(int playerIndex, int Left)
+void ChangeGunInInventory(int playerIndex, bool Left)
 {
     Player *player = &AllPlayers[playerIndex];
 
@@ -343,17 +343,14 @@ void ChangeGunInInventory(int playerIndex, int Left)
     // Find a gun in the inventory
     do
     {
-        if (Left == 1)
+        int nextIndex = Left ? 1 : -1;
+        int ceilingIndex = Left ? -1 : inventoryCapacity;
+        int floorIndex = Left ? inventoryCapacity - 1 : 0;
+
+        player->currentGunInInventory += nextIndex;
+        if (player->currentGunInInventory == ceilingIndex)
         {
-            player->currentGunInInventory--;
-            if (player->currentGunInInventory == -1)
-                player->currentGunInInventory = inventoryCapacity - 1;
-        }
-        else
-        {
-            player->currentGunInInventory++;
-            if (player->currentGunInInventory == inventoryCapacity)
-                player->currentGunInInventory = 0;
+            player->currentGunInInventory = floorIndex;
         }
     } while (getPlayerCurrentGunIndex(player) == EMPTY);
 

@@ -596,7 +596,7 @@ void checkAiShoot()
                     if (player->AllAmmoMagazine[player->currentGunInInventory - 1].AmmoCount == 0 && player->AllAmmoMagazine[player->currentGunInInventory - 1].TotalAmmoCount == 0)
                     {
                         // Change gun
-                        ChangeGunInInventory(i, 1);
+                        ChangeGunInInventory(i, true);
                     }
                     else
                     {

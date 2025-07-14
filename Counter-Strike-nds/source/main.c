@@ -792,15 +792,6 @@ void GameLoop()
 	// If local player is not a spectator
 	if (localPlayer->Team != SPECTATOR)
 	{
-		// Change gun in inventory if needed
-		if (isKeyDown(LEFT_GUN))
-		{
-			ChangeGunInInventoryForLocalPlayer(1);
-		}
-		else if (isKeyDown(RIGHT_GUN))
-		{
-			ChangeGunInInventoryForLocalPlayer(0);
-		}
 
 		// Check input and rotate player
 		RotatePlayer(&NeedUpdateViewRotation, &SendPosition, &localPlayer->cameraAngle);
@@ -1091,7 +1082,7 @@ void GameLoop()
 				lanchGrenade(newGrenade, x, y, z, localPlayer->PlayerModel->x, localPlayer->PlayerModel->y, localPlayer->PlayerModel->z);
 
 				localPlayer->AllGunsInInventory[localPlayer->currentGunInInventory] = EMPTY;
-				ChangeGunInInventoryForLocalPlayer(1);
+				ChangeGunInInventoryForLocalPlayer(true);
 
 				SendGrenade = true;
 				// Force player to send position
