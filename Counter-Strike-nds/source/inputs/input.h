@@ -19,7 +19,7 @@
 
 void initInputs();
 void readKeys();
-Vector3<double> getInputVector3();
+Vector2<double> getInputVector3();
 void ReadTouchScreen(touchPosition touch, bool *NeedChangeScreen, bool *AlwaysUpdateBottomScreen, int *ButtonToShow, int *UpdateBottomScreenOneFrame, bool *SendTeam, bool forceCheck);
 void ScanForInput();
 bool isKeyDown(enum inputButtons buttonName);

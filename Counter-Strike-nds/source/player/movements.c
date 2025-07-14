@@ -14,8 +14,6 @@
 #include "network.h"
 #include <math.h>
 
-int xSpeedAdded = 0;
-int zSpeedAdded = 0;
 int fovCheckAngle = 80;
 
 /**

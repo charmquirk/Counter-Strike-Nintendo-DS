@@ -120,10 +120,9 @@ void readKeys()
  * @brief Get the desired movement inputs.
  *
  */
-Vector3<double> getInputVector3()
+Vector2<double> getInputVector2()
 {
-    Vector3 newVector;
-    newVector.y = isKeyDown(JUMP_BUTTON);
+    Vector2 newVector;
     int xAxisInput = (isKeyDown(RIGHT_BUTTON) - isKeyDown(LEFT_BUTTON)); // The right and left input axis. Considered "x" in input vector and the movement vector.
     int zAxisInput = (isKeyDown(UP_BUTTON) - isKeyDown(DOWN_BUTTON)); // The forward and backward input axis. Considered "y" in input vector and "z" in the movement vector.
 
