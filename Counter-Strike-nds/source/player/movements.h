@@ -10,10 +10,19 @@
 //#include <NEMain.h>
 #include "main.h"
 
+extern bool CanMove; // Whether or not the round has started and the player is alive.
+extern int gunWalkSpeed; // The walk speed modifier according to which gun the player is holding.
+extern int CoyoteTime = 12; // The number of frames a player can jump after becoming airborne.
+extern int frameCountDuringAir;
+extern bool NeedJump; // Whether or not the UI Jump Button is requesting jump.
 extern int updateRate;
 extern Vector2 movementVector; // Relative movement vector.
 
-void MovePlayer(int CurrentSpeed, bool *NeedBobbing);
+void GetCanJump();
+void SetNeedJump();
+void UpdateMovement();
+void UpdateJump();
+void UpdateWalk();
 void RotatePlayer(bool *NeedUpdateViewRotation, bool *SendPosition, float *CameraAngleY);
 void AddAnglesToPlayer(float xAngleToAdd, float yAngleToAdd);
 void UpdateLookRotation(float CameraAngleY);

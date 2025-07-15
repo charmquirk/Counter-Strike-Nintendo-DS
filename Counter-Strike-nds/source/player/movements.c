@@ -16,22 +16,106 @@
 
 int fovCheckAngle = 80;
 
-/**
- * @brief Move player according to their speed and direction
- *
- * @param CurrentSpeed Speed
- * @param NeedBobbing Need to bobbing
- */
-void MovePlayer(int CurrentSpeed, bool *NeedBobbing)
+// Is the player on stairs?
+bool isOnStairs;
+// Is the player descending stairs?
+bool isInDownStairs;
+// Whether or not the player is grounded.
+bool isOnFloor;
+// Whether or not the player can jump. Can jump if the player is not dead, the round has started, or the player is on the ground (and not on some stairs).
+bool CanJump;
+// Whether or not the key or ui button for jumping is pressed.
+bool WantsJump;
+// Coyote Timer used for jumping. Can jump while timer is above 0.
+int JumpTimer;
+// CanJumpRealTimer is used wait a little bit of time before the player can jump
+int CanJumpRealTimer = 2;
+// Ask jump from UI button
+bool NeedJump;
+
+bool GetCanJump(){
+    return CanJump = !(roundState == WAIT_START && localPlayer->IsDead) && JumpTimer > 0 && isOnFloor;
+}
+
+void SetNeedJump()
 {
+	if (CanMove)
+		NeedJump = true;
+}
+
+/**
+ * @brief Update movement. Processes every frame.
+ *
+ */
+void UpdateMovement() {
+    CanMove = !(roundState == WAIT_START && localPlayer->IsDead);
+    isOnFloor = !isInDownStairs && localPlayer->PlayerPhysic->yspeed == 0;
+    UpdateJump();
+    UpdateWalk();
+}
+
+/**
+ * @brief Player jumps... or doesn't.
+ *
+ */
+void UpdateJump() {
+    isInDownStairs = false;
+    // Check if the player is on a stairs
+    CheckStairs(&CanJump, &isInDownStairs);
+
+    WantsJump = isKeyDown(JUMP_BUTTON) || NeedJump;
+    if (isOnFloor) 
+    {
+        JumpTimer = CoyoteTime;
+    }
+    else if (JumpTimer > 0)
+    {
+        JumpTimer--;
+        frameCountDuringAir++;
+    }
+
+    CanJump = CanMove && JumpTimer > 0 && isOnFloor;
+    if (CanJump && WantsJump)
+    {
+        NeedJump = false;
+        JumpTimer = 0;
+        frameCountDuringAir = 0;
+        localPlayer->PlayerPhysic->yspeed = JumpForce;
+    }
+
+    if ((CanJumpRealTimer == 0 || isInDownStairs) && isOnFloor && frameCountDuringAir > 20) // Make jump land sound if the player was more than 0,33 secs in the air
+    {
+        frameCountDuringAir = 0;
+        Play2DSound(SFX_LAND, 140);
+        // NeedJump = false;
+    }
+}
+
+
+/**
+ * @brief Player walks according to their speed and direction.
+ *
+ */
+void UpdateWalk()
+{
+    // Reset player speed
+    localPlayer->PlayerPhysic->xspeed = 0;
+    localPlayer->PlayerPhysic->zspeed = 0;
+
+    // Player movements
+    bool NeedBobbing = false;
+    gunWalkSpeed = defaultWalkSpeed;
+    if (getPlayerCurrentGunIndex(&localPlayer) < GunCount)
+        gunWalkSpeed = getPlayerCurrentGun(&localPlayer).WalkSpeed;
+
     movementVector = {};
     if (inputVector == {})
     {
         return
     }
 
-    *NeedBobbing = true; // Bob head when moving.
-    movementVector = (inputVector.x * CurrentSpeed, inputVector.y * CurrentSpeed);
+    NeedBobbing = true; // Bob head when moving.
+    movementVector = (inputVector.x * gunWalkSpeed, inputVector.y * gunWalkSpeed);
 
     if (inputVector.x != 0)
     {
@@ -41,6 +125,12 @@ void MovePlayer(int CurrentSpeed, bool *NeedBobbing)
     if (inputVector.y != 0)
     {
         localPlayer->PlayerPhysic->zspeed += movementVector.y;
+    }
+
+    // Gun headbobing
+    if (NeedBobbing && isOnFloor)
+    {
+        ApplyGunWalkAnimation(0);
     }
 }
 

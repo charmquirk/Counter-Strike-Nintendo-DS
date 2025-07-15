@@ -46,19 +46,6 @@ Player AllPlayers[MaxPlayer];
 int PlayerCount = 0;
 // Old local player position
 float OldxPos, OldyPos, OldzPos = 0;
-// Timer for the player's jump
-int CanJump = 0;
-// CanJumpRealTimer is used wait a little bit of time before the player can jump
-int CanJumpRealTimer = 2;
-
-// Number of frame when the player is in the air
-int frameCountDuringAir = 0;
-// Is the player on stairs?
-bool isOnStairs = false;
-// Is the player descending stairs?
-bool isInDownStairs = false;
-// Ask jump from UI button
-bool NeedJump = false;
 
 // Head bobing speed
 float BobbingSpeed = 0.07;
@@ -649,12 +636,6 @@ int GetTextToShowTimer()
 	return textToShowTimer;
 }
 
-void SetNeedJump()
-{
-	if (!localPlayer->IsDead && roundState != WAIT_START)
-		NeedJump = true;
-}
-
 void SetSelectedGunShop(int Value)
 {
 	SelectedGunShop = Value;
@@ -803,45 +784,7 @@ void GameLoop()
 			NeedUpdateViewRotation = false;
 		}
 
-		isInDownStairs = false;
-		// Check if the player is on a stairs
-		CheckStairs(&CanJump, &isInDownStairs);
-
-		// Reduce jump timer
-		if (CanJump > 0)
-			CanJump--;
-
-		// Check for jump
-		if (roundState != WAIT_START && !localPlayer->IsDead)
-		{
-			// CanJumpRealTimer is used wait a little bit of time before the player can jump
-			// Set CanJumpReal timer
-			if (localPlayer->PlayerPhysic->yspeed == 0 && CanJumpRealTimer > 0)
-				CanJumpRealTimer--;
-			else if (localPlayer->PlayerPhysic->yspeed != 0)
-				CanJumpRealTimer = 2;
-
-			// If player is in the air, increase the frameCountDuringAir
-			if (CanJumpRealTimer != 0 && !isInDownStairs)
-				frameCountDuringAir++;
-			else if ((CanJumpRealTimer == 0 || isInDownStairs) && frameCountDuringAir > 20) // Make jump land sound if the player was more than 0,33 secs in the air
-			{
-				frameCountDuringAir = 0;
-				Play2DSound(SFX_LAND, 140);
-				NeedJump = false;
-			}
-			else
-				frameCountDuringAir = 0;
-
-			// If the player can jump and if jump input is down
-			if ((isKeyDown(JUMP_BUTTON) || NeedJump) && (CanJumpRealTimer == 0 || CanJump > 0))
-			{
-				// Apply force on the player
-				NeedJump = false;
-				localPlayer->PlayerPhysic->yspeed = JumpForce;
-				CanJump = 0;
-			}
-		}
+		UpdateMovement();
 
 		// Set aiming view
 		if (isKeyDown(SCOPE_BUTTON))
@@ -1149,25 +1092,6 @@ void GameLoop()
 					localPlayer->bombTimer = 0;
 				}
 			}
-		}
-
-		// Reset player speed
-		localPlayer->PlayerPhysic->xspeed = 0;
-		localPlayer->PlayerPhysic->zspeed = 0;
-
-		// Player movements
-		bool NeedBobbing = false;
-		int CurrentSpeed = defaultWalkSpeed;
-		if (getPlayerCurrentGunIndex(localPlayer) < GunCount)
-			CurrentSpeed = getPlayerCurrentGun(localPlayer).WalkSpeed;
-
-		if (roundState != WAIT_START && !localPlayer->IsDead)
-			MovePlayer(CurrentSpeed, &NeedBobbing);
-
-		// Gun headbobing
-		if (NeedBobbing && (CanJumpRealTimer == 0 || CanJump > 0))
-		{
-			ApplyGunWalkAnimation(0);
 		}
 	}
 	else
