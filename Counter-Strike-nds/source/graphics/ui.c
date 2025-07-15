@@ -326,77 +326,65 @@ void startChangeMenu(enum UiMenu menuToShow)
  */
 void ChangeMenu(int menuId)
 {
-    // call the function to init the menu
-    if (menuId == GAME)
+    switch(menuId)
     {
-        initGameMenu();
-    }
-    else if (menuId == SCORE_BOARD) // Score board screen
-    {
-        initScoreMenu();
-    }
-    else if (menuId == SHOPCATEGORIES) // Shop categories
-    {
-        initShopCategoriesMenu();
-    }
-    else if (menuId == SETTINGS) // Settings menu
-    {
-        initSettingsMenu();
-    }
-    else if (menuId == QUIT) // Quit menu
-    {
-        initQuitMenu();
-    }
-    else if (menuId == SHOP) // SHOP
-    {
-        initShopMenu();
-    }
-    else if (menuId == CONTROLLER) // Game pad menu
-    {
-        initControllerMenu();
-    }
-    else if (menuId == MAIN) // Main menu
-    {
-        initMainMenu();
-    }
-    else if (menuId == CHANGENAME) // Change name menu
-    {
-        initChangeNameMenu();
-    }
-    else if (menuId == CHAT) // Online chat
-    {
-        initChatMenu();
-    }
-    else if (menuId == CONTROLSSETTINGS) // Controls settings
-    {
-        initControlsSettingsMenu();
-    }
-    else if (menuId == CONTROLSCHANGE) // Controls customization
-    {
-        initControlsChangeMenu();
-    }
-    else if (menuId == MAP_SELECTION_IMAGE)
-    {
-        initSelectionMapImageMenu();
-    }
-    else if (menuId == MAP_SELECTION_LIST)
-    {
-        initSelectionMapListMenu();
-    }
-    else if (menuId == PARTY_MODE_SELECTION_LIST)
-    {
-    }
-    else if (menuId == FINAL_SCORE)
-    {
-        initFinalScoreMenu();
-    }
-    else if (menuId == JOIN_CREATE_PARTY)
-    {
-        initJoinCreatePartyMenu();
-    }
-    else if (menuId == ENTER_CODE)
-    {
-        initEnterCodeMenu();
+        case GAME:
+            initGameMenu();
+            break;
+        case SCORE_BOARD: // Score board screen
+            initScoreMenu();
+            break;
+        case SHOPCATEGORIES: // Shop categories
+            initShopCategoriesMenu();
+            break;
+        case SETTINGS: // Settings menu
+            initSettingsMenu();
+            break;
+        case QUIT: // Quit menu
+            initQuitMenu();
+            break;
+        case SHOP: // SHOP
+            initShopMenu();
+            break;
+        case CONTROLLER: // Game pad menu
+            initControllerMenu();
+            break;
+        case MAIN:
+            initMainMenu();
+            break;
+        case CHANGENAME: // Change name menu
+            initChangeNameMenu();
+            break;
+        case SHOP: // SHOP
+            initShopMenu();
+            break;
+        case CHAT: // Online chat
+            initChatMenu();
+            break;
+        case CONTROLSSETTINGS: // Controls settings
+            initControlsSettingsMenu();
+            break;
+        case CONTROLSCHANGE: // Controls customization
+            initControlsChangeMenu();
+            break;
+        case MAP_SELECTION_IMAGE:
+            initSelectionMapImageMenu();
+            break;
+        case MAP_SELECTION_LIST:
+            initSelectionMapListMenu();
+            break;
+        case PARTY_MODE_SELECTION_LIST:
+            // Not implemented
+            break;
+        case FINAL_SCORE:
+            initFinalScoreMenu();
+            break;
+        case JOIN_CREATE_PARTY:
+            initJoinCreatePartyMenu();
+            break;
+        case ENTER_CODE:
+            initEnterCodeMenu();
+            break;
     }
 }
 
@@ -504,17 +492,7 @@ void ChangeShopElement(int Left)
         Selected = FirstGunFound;
 
     // Update the texture
-    NE_PaletteDelete(Palettes[10]);
-    NE_MaterialDelete(BottomScreenSpritesMaterials[6]);
-    BottomScreenSpritesMaterials[6] = NE_MaterialCreate();
-    Palettes[10] = NE_PaletteCreate();
-    if (ShopCategory < EQUIPMENT)
-        NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], AllGuns[Selected].texture, 1);
-    else if (ShopCategory == GRENADES)
-        NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], GetAllGrenades()[Selected - GunCount].texture, 1);
-    else if (ShopCategory == EQUIPMENT)
-        NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], allEquipments[Selected - GunCount - shopGrenadeCount].texture, 1);
-
+    CreateShopMenuNE();
     SetSelectedGunShop(Selected);
 
     // Refresh the screen
@@ -603,25 +581,24 @@ void changeControlsPage(int isLeft)
  */
 void showPartyEventText(int event)
 {
-    if (event == TERRORISTS_WIN)
+    switch(event)
     {
-        strncpy(gameEventNotificationText, "Terrorists win", 30);
-        PlayBasicSound(SFX_TERRORISTSWIN);
-    }
-    else if (event == COUNTER_TERRORISTS_WIN)
-    {
-        strncpy(gameEventNotificationText, "Counter-Terrorists win", 30);
-        PlayBasicSound(SFX_COUNTERTERRORISTWIN);
-    }
-    else if (event == BOMB_PLANTED)
-    {
-        strncpy(gameEventNotificationText, "Bomb has been planted", 30);
-        PlayBasicSound(SFX_BOMBHASBEENPLANTED);
-    }
-    else if (event == BOMB_DEFUSED)
-    {
-        strncpy(gameEventNotificationText, "Bomb has been defused", 30);
-        PlayBasicSound(SFX_BOMBHASBEENDEFUSED);
+        case TERRORISTS_WIN:
+            strncpy(gameEventNotificationText, "Terrorists win", 30);
+            PlayBasicSound(SFX_TERRORISTSWIN);
+            break;
+        case COUNTER_TERRORISTS_WIN:
+            strncpy(gameEventNotificationText, "Counter-Terrorists win", 30);
+            PlayBasicSound(SFX_COUNTERTERRORISTWIN);
+            break;
+        case BOMB_PLANTED:
+            strncpy(gameEventNotificationText, "Bomb has been planted", 30);
+            PlayBasicSound(SFX_BOMBHASBEENPLANTED);
+            break;
+        case BOMB_DEFUSED:
+            strncpy(gameEventNotificationText, "Bomb has been defused", 30);
+            PlayBasicSound(SFX_BOMBHASBEENDEFUSED);
+            break;
     }
 
     // Set the timer
@@ -711,14 +688,7 @@ void stopScanForInput()
  */
 void updateKeyboardModeButton()
 {
-    if (isAzerty)
-    {
-        AllButtons[2].text = "Azerty";
-    }
-    else
-    {
-        AllButtons[2].text = "Qwerty";
-    }
+    AllButtons[2].text = (isAzerty) ? "Azerty" : "Qwerty";
 }
 
 /**
@@ -728,51 +698,52 @@ void updateKeyboardModeButton()
 void drawKeyboardInput()
 {
     NE_2DDrawQuad(0, 0, ScreenWidth, ScreenHeightFixed, 3, RGB15(3, 3, 3)); // Background
-    if (currentMenu == CHANGENAME)
+    switch (currentMenu) 
     {
-        NE_TextPrint(0,        // Font slot
+        case CHANGENAME:
+            NE_TextPrint(0,        // Font slot
                      11, 2,    // Coordinates x(column), y(row)
                      NE_White, // Color
                      "Change name");
 
-        char editedName[21];
+            char editedName[21];
 
-        sprintf(editedName, "%s", tempText);
+            sprintf(editedName, "%s", tempText);
 
-        int nameLength = strlen(editedName);
-        for (int i = nameLength; i < maxInputLength; i++)
-        {
-            sprintf(editedName + nameLength, "_");
-            nameLength++;
-        }
+            int nameLength = strlen(editedName);
+            for (int i = nameLength; i < maxInputLength; i++)
+            {
+                sprintf(editedName + nameLength, "_");
+                nameLength++;
+            }
 
-        NE_TextPrint(0,        // Font slot
-                     10, 12,   // Coordinates x(column), y(row)
-                     NE_White, // Color
-                     editedName);
-    }
-    else if (currentMenu == ENTER_CODE)
-    {
-        NE_TextPrint(0,        // Font slot
-                     11, 2,    // Coordinates x(column), y(row)
-                     NE_White, // Color
-                     "Enter code");
+            NE_TextPrint(0,        // Font slot
+                        10, 12,   // Coordinates x(column), y(row)
+                        NE_White, // Color
+                        editedName);
+            break;
+        case ENTER_CODE:
+            NE_TextPrint(0,        // Font slot
+                        11, 2,    // Coordinates x(column), y(row)
+                        NE_White, // Color
+                        "Enter code");
 
-        char code[21];
+            char code[21];
 
-        sprintf(code, "%s", tempText);
+            sprintf(code, "%s", tempText);
 
-        int codeLength = strlen(code);
-        for (int i = codeLength; i < maxInputLength; i++)
-        {
-            sprintf(code + codeLength, "_");
-            codeLength++;
-        }
+            int codeLength = strlen(code);
+            for (int i = codeLength; i < maxInputLength; i++)
+            {
+                sprintf(code + codeLength, "_");
+                codeLength++;
+            }
 
-        NE_TextPrint(0,        // Font slot
-                     14, 12,   // Coordinates x(column), y(row)
-                     NE_White, // Color
-                     code);
+            NE_TextPrint(0,        // Font slot
+                        14, 12,   // Coordinates x(column), y(row)
+                        NE_White, // Color
+                        code);
+            break;
     }
 }
 
@@ -1503,16 +1474,10 @@ void initGameMenu()
     AllButtons[4].yTextPos = 6;
     AllButtons[4].text = "Gamepad";
 
-    if (AllPlayers[0].Team == SPECTATOR)
-    {
-        AllButtons[1].isHidden = true;
-        AllButtons[4].isHidden = true;
-    }
-    if (isInTutorial)
-    {
-        AllButtons[0].isHidden = true;
-        AllButtons[1].isHidden = true;
-    }
+    AllButtons[0].isHidden = isInTutorial;
+    bool isSpectator = AllPlayers[0].Team == SPECTATOR;
+    AllButtons[1].isHidden = isSpectator || isInTutorial;
+    AllButtons[4].isHidden = isSpectator;
 
     SetButtonToShow(5);
 }
@@ -1941,10 +1906,7 @@ void initMainMenu()
 
     lastOpenedMenu = &initMainMenu;
 
-    if (Connection != OFFLINE && Connection != UNSELECTED)
-    {
-        SendLeave = true;
-    }
+    SendLeave = (Connection != OFFLINE && Connection != UNSELECTED);
     Connection = UNSELECTED;
 
     setQuitButton(false);
@@ -3199,4 +3161,29 @@ void unloadChangeNameMenu()
 void unloadControlsChangeMenu()
 {
     stopScanForInput();
+}
+/**
+ * @brief Creates Nitro Engine materials for shop menu.
+ *
+
+ */
+void CreateShopMenuNE() {
+    NE_PaletteDelete(Palettes[10]);
+    NE_MaterialDelete(BottomScreenSpritesMaterials[6]);
+    BottomScreenSpritesMaterials[6] = NE_MaterialCreate();
+    Palettes[10] = NE_PaletteCreate();
+    switch (ShopCategory)
+    {
+        case PISTOLS:
+        case HEAVY:
+        case SGM:
+            NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], AllGuns[GetSelectedGunShop()].texture, 1);
+            break;
+        case EQUIPMENT:
+            NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], GetAllGrenades()[GetSelectedGunShop() - GunCount - shopGrenadeCount].texture, 1);
+            break;
+        case GRENADE:
+            NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], GetAllGrenades()[GetSelectedGunShop() - GunCount].texture, 1);
+            break;
+    }
 }
