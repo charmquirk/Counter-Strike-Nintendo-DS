@@ -1,5 +1,5 @@
-# Charm Quirk's Branch of Counter Strike NDS
-Checkout the original/main branch [here](https://github.com/Fewnity/Counter-Strike-Nintendo-DS).
+# CharmQuirk's Fork of Counter Strike NDS
+Checkout the original/main branch [here](https://github.com/Fewnity/Counter-Strike-Nintendo-DS). Contact me if you have any questions.
 
 # CharmQuirk's TODO
 I have a few changes I would like to make with my fork of this game:
