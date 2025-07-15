@@ -1489,3 +1489,17 @@ void setNeedRespawn(Player *player)
 	player->RespawnTimer = allPartyModes[currentPartyMode].trainingRespawnSecondsDuration * 60;
 	player->NeedRespawn = true;
 }
+
+/**
+ * @brief Return an integer within the range. Wraps around if the integer is below or above the range. Taken from Godot Engine.
+ */
+int wrapi (int value, int min, int max)
+{
+	int range = max - min + 1;
+    
+    if (value < min) {
+        value += range * ((min - value) / range + 1);
+    }
+    
+    return min + (value - min) % range;
+}

@@ -540,18 +540,9 @@ void AskGameMode()
  */
 void ChangeMap(int Left)
 {
-    if (Left == 0)
-    {
-        currentSelectionMap++;
-        if (currentSelectionMap == MAP_COUNT)
-            currentSelectionMap = 0;
-    }
-    else
-    {
-        currentSelectionMap--;
-        if (currentSelectionMap == -1)
-            currentSelectionMap = MAP_COUNT - 1;
-    }
+    int nextIndex = currentSelectionMap;
+    nextIndex += (Left) ? 1 : -1;
+    currentSelectionMap = wrapi(nextIndex, 0, MAP_COUNT);
 
     // Update texture
     NE_PaletteDelete(Palettes[10]);
@@ -597,22 +588,10 @@ void SetTeam(int i)
  */
 void changeControlsPage(int isLeft)
 {
-    if (!isLeft)
-    {
-        controlsPage++;
-        if (controlsPage == CONTROLS_PAGE_COUNT)
-        {
-            controlsPage = 0;
-        }
-    }
-    else
-    {
-        controlsPage--;
-        if (controlsPage == -1)
-        {
-            controlsPage = CONTROLS_PAGE_COUNT - 1;
-        }
-    }
+    int nextIndex = currentSelectionMap;
+    nextIndex += (Left) ? 1 : -1;
+    controlsPage = wrapi(nextIndex, 0, CONTROLS_PAGE_COUNT);
+    
     // Refresh the menu
     initControlsChangeMenu();
 }

@@ -624,4 +624,6 @@ void setPlayersPositionAtSpawns();
 void rumble(int timer);
 bool isLocalPlayerMoving();
 
+int wrapi (int value, int min, int max);
+
 #endif // MAIN_H_
