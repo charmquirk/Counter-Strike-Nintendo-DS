@@ -81,23 +81,24 @@ void initNetwork(int option)
     else // Then connect to server
     {
         my_socket = socket(AF_INET, SOCK_STREAM, 0);
-        if (Connection == DEBUG_IP_1)
+        char* url;
+        switch (Connection)
         {
-            connectToServer(DEBUG_IP_1_STRING, false, my_socket, option);
+            case DEBUG_IP_1:
+                url = DEBUG_IP_1_STRING;
+                break;
+            case DEBUG_IP_2:
+                url = DEBUG_IP_2_STRING;
+                break;
+            case ONLINE_SERVER_IP:
+                url = ONLINE_SERVER_IP_STRING;
+                break;
+            case LOCAL: // Local mode (Android phone with the android server version (unreleased))
+                break;
         }
-        else if (Connection == ONLINE_SERVER_IP)
-        {
-            connectToServer(ONLINE_SERVER_IP_STRING, false, my_socket, option);
-        }
-        else if (Connection == DEBUG_IP_2)
-        {
-            connectToServer(DEBUG_IP_2_STRING, false, my_socket, option);
-        }
-        else if (Connection == LOCAL)
-        {
-            connectToServer("", true, my_socket, option); // Local mode (Android phone with the android server version (unreleased))
-        }
-
+        if (Connection > OFFLINE)
+            connectToServer(url, url[0] == '\0', my_socket, option);
+        
         Connection = UNSELECTED;
     }
 }
@@ -132,10 +133,8 @@ void connectToServer(char *url, bool LocalMode, int my_socket, enum JoinType opt
     // Tell the socket to connect to the IP address we found, on port 6003 or 1080 for android phone
     struct sockaddr_in sain;
     sain.sin_family = AF_INET;
-    if (!LocalMode)
-        sain.sin_port = htons(SERVER_PORT);
-    else
-        sain.sin_port = htons(LOCAL_SERVER_PORT);
+    int port = (LocalMode) ? LOCAL_SERVER_PORT : SERVER_PORT;
+    sain.sin_port = htons(port);
     sain.sin_addr.s_addr = *((unsigned long *)(myhost->h_addr_list[0]));
 
     // Connect to the server
@@ -417,14 +416,21 @@ void treatData()
                 }
             }
 
-            if (HitType == 0)
-                Play3DSound(SFX_FLESH_IMPACT, Volume, Panning, player); // Check with kevlar
-            else if (HitType == 1)
-                Play3DSound(SFX_HEADSHOT1, Volume, Panning, player);
-            else if (HitType == 2)
-                Play3DSound(SFX_FLESH_IMPACT, Volume, Panning, player);
-            else
-                Play3DSound(SFX_KNIFE_HIT_PLAYER, Volume, Panning, player);
+            switch (HitType)
+            {
+                case 0:
+                    Play3DSound(SFX_FLESH_IMPACT, Volume, Panning, player); // Check with kevlar
+                    break;
+                case 1:
+                    Play3DSound(SFX_HEADSHOT1, Volume, Panning, player);
+                    break;
+                case 2:
+                    Play3DSound(SFX_FLESH_IMPACT, Volume, Panning, player);
+                    break;
+                default:
+                    Play3DSound(SFX_KNIFE_HIT_PLAYER, Volume, Panning, player);
+                    break;
+            }
         }
         else if (strcmp(arr[REQUEST_NAME_INDEX], "SETID") == 0) // Add player
         {
@@ -465,13 +471,14 @@ void treatData()
                 }
 
             // Update screen if team screen is opened
-            if (currentMenu == SCORE_BOARD)
+            switch (currentMenu)
             {
-                UpdateBottomScreenFrameCount += 8;
-            }
-            else if (currentMenu == GAME)
-            {
-                initGameMenu();
+                case SCORE_BOARD:
+                    UpdateBottomScreenFrameCount += 8;
+                    break;
+                case GAME:
+                    initGameMenu();
+                    break;
             }
 
             // TODO check this
@@ -480,10 +487,7 @@ void treatData()
                 if (roundState != TRAINING)
                     changeCameraPlayerView(false);
 
-                if (ParsedIsCounter != -1)
-                {
-                    AllButtons[0].isHidden = false;
-                }
+                AllButtons[0].isHidden = ParsedIsCounter == -1;
                 AllButtons[1].isHidden = false;
                 AllButtons[2].isHidden = false;
                 WaitForTeamResponse = false;
@@ -552,19 +556,19 @@ void treatData()
             int ConfirmInventoryIndexInt = intParse(arr[3]);
             int ConfirmResultInt = intParse(arr[4]); // 0 Error, 1 Okay
 
-            if (ConfirmTypeInt == 0) // Set gun in inventory
+            if (ConfirmTypeInt) // Set gun in inventory
             {
-                if (ConfirmResultInt == 0) // Error
+                switch (ConfirmResultInt) // Not finished in source code. Ignore empty entries.
                 {
-                }
-                else if (ConfirmResultInt == 1) // Okay
-                {
-                    DisableAim();
-                    SetGunInInventory(ConfirmArgumentInt, ConfirmInventoryIndexInt);
-                    setSelectedGunInInventory(0, ConfirmInventoryIndexInt);
-                }
-                else if (ConfirmResultInt == 2) // Not an error
-                {
+                    case 0: // Error
+                        break;
+                    case 1: // Okay
+                        DisableAim();
+                        SetGunInInventory(ConfirmArgumentInt, ConfirmInventoryIndexInt);
+                        setSelectedGunInInventory(0, ConfirmInventoryIndexInt);
+                        break;
+                    case 2: // Not an error
+                        break;
                 }
             }
         }
@@ -716,19 +720,16 @@ void treatData()
             int ParsedPlayerId = intParse(arr[1]);
 
             int Reset = intParse(arr[2]);
-
-            if (Reset == 0)
+            switch (Reset)
             {
-                ReloadGun(ParsedPlayerId);
-            }
-            else if (Reset == 1)
-            {
-                ResetGunsAmmo(ParsedPlayerId);
-            }
-            else if (Reset == 2)
-            {
-                int GunId = intParse(arr[4]);
-                ResetGunAmmo(ParsedPlayerId, GunId);
+                case 0:
+                case 1:
+                    ResetGunsAmmo(ParsedPlayerId);
+                    break;
+                case 2:
+                    int GunId = intParse(arr[4]);
+                    ResetGunAmmo(ParsedPlayerId, GunId);
+                    break;
             }
         }
         else if (strcmp(arr[REQUEST_NAME_INDEX], "SETNAME") == 0) // Get a player name
@@ -759,47 +760,41 @@ void treatData()
         else if (strcmp(arr[REQUEST_NAME_INDEX], "ERROR") == 0) // Show text from server
         {
             int errorId = intParse(arr[1]);
-            if (errorId == Ban)
+            char* newText;
+            switch (errorId)
             {
-                strcpy(errorText, "You are banned!");
+                case Ban:
+                    newText = "You are banned!";
+                    break;
+                case WrongVersion:
+                    newText = "You are using an old version of the game, please update your game.";
+                    break;
+                case MacAddressMissing:
+                    newText = "Your Nintendo DS doesn't have a MAC address.";
+                    break;
+                case WrongSecurityKey:
+                    newText = "You are using a modified game.";
+                    break;
+                case ServerFull:
+                    newText = "The server is currently full, please try again later.";
+                    break;
+                case ServerStopped:
+                    newText = "The server is currently under maintenance.";
+                    break;
+                case SaveCorrupted:
+                    newText = "Your save is corrupted.";
+                    break;
+                case IncorrectCode:
+                    newText = "The code is incorrect.";
+                    break;
+                case KickTeamKill:
+                    newText = "You have been kicked (Team kill).";
+                    break;
+                default:
+                    newText = "An error has occurred!";
+                    break;
             }
-            else if (errorId == WrongVersion)
-            {
-                strcpy(errorText, "You are using an old version of the game, please update your game.");
-            }
-            else if (errorId == MacAddressMissing)
-            {
-                strcpy(errorText, "Your Nintendo DS doesn't have a MAC address.");
-            }
-            else if (errorId == WrongSecurityKey)
-            {
-                strcpy(errorText, "You are using a modified game.");
-            }
-            else if (errorId == ServerFull)
-            {
-                strcpy(errorText, "The server is currently full, please try again later.");
-            }
-            else if (errorId == ServerStopped)
-            {
-                strcpy(errorText, "The server is currently under maintenance.");
-            }
-            else if (errorId == SaveCorrupted)
-            {
-                strcpy(errorText, "Your save is corrupted.");
-            }
-            else if (errorId == IncorrectCode)
-            {
-                strcpy(errorText, "The code is incorrect.");
-            }
-            else if (errorId == KickTeamKill)
-            {
-                strcpy(errorText, "You have been kicked (Team kill).");
-            }
-            else
-            {
-                strcpy(errorText, "An error has occurred!");
-            }
-
+            strcpy(errorText, newText);
             initOnlineErrorMenu();
         }
         else if (strcmp(arr[REQUEST_NAME_INDEX], "TEXT") == 0) // Show text from server
