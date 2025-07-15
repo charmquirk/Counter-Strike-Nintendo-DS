@@ -4,6 +4,8 @@ Checkout the original/main branch [here](https://github.com/Fewnity/Counter-Stri
 # CharmQuirk's TODO
 I have a few changes I would like to make with my fork of this game:
 
+![Bottom Screen UI Concept Image](https://github.com/charmquirk/Counter-Strike-Nintendo-DS/blob/main/.external/UI%20Concepts/UI%20Concepts%20-%20Bottom%20Screen.png)
+
 ### Improve UI
 - [ ] Add screen with a button to skip tutorial.
 - [ ] Put defuse bomb button on touch screen.
