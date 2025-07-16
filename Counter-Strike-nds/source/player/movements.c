@@ -184,38 +184,42 @@ void AddAnglesToPlayer(float xAngleToAdd, float yAngleToAdd)
  */
 void RotatePlayer(bool *NeedUpdateViewRotation, bool *SendPosition, float *CameraAngleY)
 {
-    float AngleSpeed = 1 * buttonsSensitivity;
+    float AngleSpeed;
 
     // If the player is scoping, the angle speed is lower
-    if (GetCurrentScopeLevel() == 1)
-        AngleSpeed *= 0.5;
-    else if (GetCurrentScopeLevel() == 2)
-        AngleSpeed *= 0.25;
+    switch (GetCurrentScopeLevel())
+    {
+        case 1:
+            AngleSpeed *= 0.5;
+        case 2:
+            AngleSpeed *= 0.25;
+        default:
+            AngleSpeed = 1 * buttonsSensitivity;
+    }
+        
 
     // Change player rotation
-    if (isKey(LOOK_RIGHT_BUTTON))
+    int playerRotationDirection = isKey(LOOK_LEFT_BUTTON) - isKey(LOOK_RIGHT_BUTTON);
+    if (playerRotationDirection != 0)
     {
-        localPlayer->Angle -= AngleSpeed;
-        *NeedUpdateViewRotation = true;
-        *SendPosition = true;
-    }
-    else if (isKey(LOOK_LEFT_BUTTON))
-    {
-        localPlayer->Angle += AngleSpeed;
+        localPlayer->Angle += AngleSpeed * playerRotationDirection;
         *NeedUpdateViewRotation = true;
         *SendPosition = true;
     }
 
+
     // Change camera rotation
-    if (isKey(LOOK_UP_BUTTON) && *CameraAngleY > 9)
+    int cameraRotationDirection = isKey(LOOK_DOWN_BUTTON) - isKey(LOOK_UP_BUTTON);
+    int nextCameraAngleY;
+    if (cameraRotationDirection != 0)
     {
-        *CameraAngleY -= AngleSpeed;
-        *NeedUpdateViewRotation = true;
-    }
-    else if (isKey(LOOK_DOWN_BUTTON) && *CameraAngleY < 245)
-    {
-        *CameraAngleY += AngleSpeed;
-        *NeedUpdateViewRotation = true;
+        nextCameraAngleY += *CameraAngleY + (AngleSpeed * cameraRotationDirection);
+        if (nextCameraAngleY > 9 && nextCameraAngleY < 245)
+        {
+            *CameraAngleY = nextCameraAngleY;
+            *NeedUpdateViewRotation = true;
+        }
+        
     }
 }
 
