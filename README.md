@@ -9,7 +9,7 @@ I have a few changes I would like to make with my fork of this game:
 - [ ] Optimize network code. **Started**
 
 ### Improve input handling
-- [ ] Normalizing movement vectors, preventing moving faster horizontally. **Partially Complete**
+- [ ] Normalizing movement vectors, preventing moving faster horizontally. **Testing Needed**
 - [ ] Move all movement code to the movement script. Take it OUT of the main script aka the main game loop. **Partially Complete**
 - [ ] Add "double tap touch screen to jump" from Metroid Prime: Hunters DS (as requested).
 - [ ] Add better input customization and re-add old control scheme.

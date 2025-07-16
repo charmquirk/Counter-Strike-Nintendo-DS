@@ -101,37 +101,33 @@ void UpdateWalk()
     // Reset player speed
     localPlayer->PlayerPhysic->xspeed = 0;
     localPlayer->PlayerPhysic->zspeed = 0;
+    movementVector = {0, 0};
+
+    if (inputVector.x == 0 && inputVector.y == 0)
+        return;
 
     // Player movements
-    bool NeedBobbing = false;
     gunWalkSpeed = defaultWalkSpeed;
     if (getPlayerCurrentGunIndex(&localPlayer) < GunCount)
         gunWalkSpeed = getPlayerCurrentGun(&localPlayer).WalkSpeed;
 
-    movementVector = {};
-    if (inputVector == {})
-    {
-        return
-    }
+    // Get player's rotation angle in radians
+    float angleRad = localPlayer->Angle / 512.0 * M_TWOPI;
+    float cosAngle = cosf(angleRad);
+    float sinAngle = sinf(angleRad);
 
-    NeedBobbing = true; // Bob head when moving.
-    movementVector = (inputVector.x * gunWalkSpeed, inputVector.y * gunWalkSpeed);
+    // Rotate input vector according to player's rotation
+    float rotatedX = inputVector.x * cosAngle - inputVector.y * sinAngle;
+    float rotatedY = inputVector.x * sinAngle + inputVector.y * cosAngle;
+    movementVector = (rotatedX * gunWalkSpeed, rotatedY * gunWalkSpeed);
 
-    if (inputVector.x != 0)
-    {
-        localPlayer->PlayerPhysic->xspeed += movementVector.x:
-    }
-
-    if (inputVector.y != 0)
-    {
-        localPlayer->PlayerPhysic->zspeed += movementVector.y;
-    }
+    // Apply speed and set movement
+    localPlayer->PlayerPhysic->xspeed = movementVector.x;
+    localPlayer->PlayerPhysic->zspeed = movementVector.y;
 
     // Gun headbobing
-    if (NeedBobbing && isOnFloor)
-    {
+    if (isOnFloor)
         ApplyGunWalkAnimation(0);
-    }
 }
 
 /**
