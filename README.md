@@ -18,9 +18,11 @@ I have a few changes I would like to make with my fork of this game:
 
 ### Improve UI
 - [ ] Add screen with a button to skip tutorial.
+- [ ] Add a proper title screen.
+- [ ] Add more icons for better readability.
 - [ ] Put defuse/plant bomb ui button on touch screen.
 - [ ] Temporarily remove Jump ui button from the touch screen. 
-- [ ] Reorganize settings menu and add tabs.
+- [ ] Reorganize settings menu and add tabs. Controls manages input settings such as keyboard mode, multiplayer allows you to change your name, graphics allows you to change your crosshair transparency, etc.
 - [ ] Reorganize the bottom screen. Put camo matching team color on bottom screen
 
 ### Improve Networking
