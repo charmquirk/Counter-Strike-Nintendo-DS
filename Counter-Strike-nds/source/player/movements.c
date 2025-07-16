@@ -106,7 +106,7 @@ void UpdateWalk()
     if (inputVector.x == 0 && inputVector.y == 0)
         return;
 
-    // Player movements
+    // Set the walk speed according to the current gun
     gunWalkSpeed = defaultWalkSpeed;
     if (getPlayerCurrentGunIndex(&localPlayer) < GunCount)
         gunWalkSpeed = getPlayerCurrentGun(&localPlayer).WalkSpeed;
