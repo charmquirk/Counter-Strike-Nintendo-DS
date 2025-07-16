@@ -6,7 +6,6 @@ I have a few changes I would like to make with my fork of this game:
 
 ### Miscellaneous Improvements
 - [ ] General code cleanup. **Ongoing**
-- [ ] Optimize network code. **Started**
 
 ### Improve input handling
 - [ ] Normalizing movement vectors, preventing moving faster horizontally. **Testing Needed**
@@ -23,3 +22,7 @@ I have a few changes I would like to make with my fork of this game:
 - [ ] Temporarily remove Jump ui button from the touch screen. 
 - [ ] Reorganize settings menu and add tabs.
 - [ ] Reorganize the bottom screen. Put camo matching team color on bottom screen
+
+### Improve Networking
+- [ ] Optimize network code. **Started**
+- [ ] Implement Rollback with player prediction.
