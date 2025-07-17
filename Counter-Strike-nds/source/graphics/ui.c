@@ -84,6 +84,8 @@ int showShootFriendMessage = 0;
 
 float cursorTransparency = 1;
 
+const int NULL_PARAMETER = -1; // A constant that skips setting the parameter variable when adding a button
+
 void *AllocateLargestFreeBlock(size_t *Size)
 {
     size_t s0, s1;
@@ -1422,58 +1424,21 @@ void initGameMenu()
     setQuitButton(false);
 
     // Show score button
-    AllButtons[0].xPos = 80;
-    AllButtons[0].yPos = 104;
-    AllButtons[0].xSize = 100;
-    AllButtons[0].ySize = 24;
-    AllButtons[0].OnClick = &initScoreMenu;
-    AllButtons[0].xTextPos = 12;
-    AllButtons[0].yTextPos = 14;
-    if (localPlayer->Team == SPECTATOR)
-        AllButtons[0].text = "Choose team";
-    else
-        AllButtons[0].text = "Show score";
+    char* scoreButtonText = (localPlayer->Team == SPECTATOR) ? "Choose Team" : "Show Score";
+    addButton(0, 80, 104, 100, 24, &initScoreMenu, NULL_PARAMETER, 12, 14, scoreButtonText);
 
     // Open shop categories button
-    AllButtons[1].xPos = 80;
-    AllButtons[1].yPos = 72;
-    AllButtons[1].xSize = 100;
-    AllButtons[1].ySize = 24;
-    AllButtons[1].OnClick = &initShopCategoriesMenu;
-    AllButtons[1].xTextPos = 12;
-    AllButtons[1].yTextPos = 10;
-    AllButtons[1].text = "Open shop";
+    addButton(1, 80, 72, 100, 24, &initShopCategoriesMenu, NULL_PARAMETER, 12, 10, "Open Shop");
 
     // Settings button
-    AllButtons[2].xPos = 80;
-    AllButtons[2].yPos = 136;
-    AllButtons[2].xSize = 100;
-    AllButtons[2].ySize = 24;
-    AllButtons[2].OnClick = &initSettingsMenu;
-    AllButtons[2].xTextPos = 12;
-    AllButtons[2].yTextPos = 18;
-    AllButtons[2].text = "Settings";
+    addButton(2, 80, 136, 100, 24, &initSettingsMenu, NULL_PARAMETER, 12, 18, "Settings");
 
     // Quit game button
-    AllButtons[3].xPos = 80;
-    AllButtons[3].yPos = 168;
-    AllButtons[3].xSize = 100;
-    AllButtons[3].ySize = 24;
-    AllButtons[3].OnClick = &initQuitMenu;
-    AllButtons[3].xTextPos = 12;
-    AllButtons[3].yTextPos = 22;
-    AllButtons[3].text = "Quit game";
+    addButton(3, 80, 168, 100, 24, &initQuitMenu, NULL_PARAMETER, 12, 22, "Quit Game");
 
     // Game pad button
-    AllButtons[4].xPos = 80;
-    AllButtons[4].yPos = 40;
-    AllButtons[4].xSize = 100;
-    AllButtons[4].ySize = 24;
-    AllButtons[4].OnClick = &initControllerMenu;
-    AllButtons[4].xTextPos = 13;
-    AllButtons[4].yTextPos = 6;
-    AllButtons[4].text = "Gamepad";
-
+    addButton(4, 80, 40, 100, 24, &initControllerMenu, NULL_PARAMETER, 13, 6, "Gamepad");
+    
     AllButtons[0].isHidden = isInTutorial;
     bool isSpectator = AllPlayers[0].Team == SPECTATOR;
     AllButtons[1].isHidden = isSpectator || isInTutorial;
@@ -1501,26 +1466,10 @@ void initScoreMenu()
     if (AllPlayers[0].Team == -1)
     {
         // Join counter button
-        AllButtons[0].xPos = 18; // 128-20-90
-        AllButtons[0].yPos = 169;
-        AllButtons[0].xSize = 90;
-        AllButtons[0].ySize = 20;
-        AllButtons[0].OnClick = &SetTeam;
-        AllButtons[0].parameter = COUNTERTERRORISTS;
-        AllButtons[0].xTextPos = 6;
-        AllButtons[0].yTextPos = 22;
-        AllButtons[0].text = "Join";
+        addButton(0, 18, 169, 90, 20, &SetTeam, COUNTERTERRORISTS, 6, 22, "Join");
 
         // Join terrorists button
-        AllButtons[1].xPos = 148; // 128+20
-        AllButtons[1].yPos = 169;
-        AllButtons[1].xSize = 90;
-        AllButtons[1].ySize = 20;
-        AllButtons[1].OnClick = &SetTeam;
-        AllButtons[1].parameter = TERRORISTS;
-        AllButtons[1].xTextPos = 22;
-        AllButtons[1].yTextPos = 22;
-        AllButtons[1].text = "Join";
+        addButton(1, 148, 169, 90, 20, &SetTeam, TERRORISTS, 22, 22, "Join");
 
         SetButtonToShow(2);
     }
@@ -1577,18 +1526,17 @@ void initShopCategoriesMenu()
 
         setQuitButton(true);
 
-        for (int buttonIndex = 0; buttonIndex < 6; buttonIndex++)
+        int numOfButtons = 6;
+        for (int buttonIndex = 0; buttonIndex < numOfButtons; buttonIndex++)
         {
             // Set all categories buttons
-            AllButtons[buttonIndex].xPos = (ScreenWidth / 2) * (buttonIndex / 3);
-            AllButtons[buttonIndex].yPos = ((198 - 23) / 3) * (buttonIndex % 3) + 23;
-            AllButtons[buttonIndex].xSize = ScreenWidth / 2;
-            AllButtons[buttonIndex].ySize = (198 - 23) / 3;
-            AllButtons[buttonIndex].OnClick = &OpenShopCategory;
-            AllButtons[buttonIndex].parameter = buttonIndex;
-            AllButtons[buttonIndex].text = "";
+            int xPos = (ScreenWidth / 2) * (buttonIndex / 3);
+            int yPos = ((198 - 23) / 3) * (buttonIndex % 3) + 23;
+            int xSize = ScreenWidth / 2;
+            int ySize = (198 - 23) / 3;
+            addButton(buttonIndex, xPos, yPos, xSize, ySize, &OpenShopCategory, buttonIndex, 0, 0, "");
         }
-        SetButtonToShow(6);
+        SetButtonToShow(numOfButtons);
     }
 }
 
@@ -1626,32 +1574,11 @@ void initSettingsMenu()
     AllCheckBoxs[1].value = &showPing;
 
     // Set change name button
-    AllButtons[0].xPos = 15;
-    AllButtons[0].yPos = 88;
-    AllButtons[0].xSize = 100;
-    AllButtons[0].ySize = 24;
-    AllButtons[0].OnClick = &initChangeNameMenu;
-    AllButtons[0].xTextPos = 3;
-    AllButtons[0].yTextPos = 12;
-    AllButtons[0].text = "Change name";
+    addButton(0, 15, 88, 100, 24, &initChangeNameMenu, NULL_PARAMETER, 3, 12, "Change name");
 
     // Set change controls button
-    AllButtons[1].xPos = 140;
-    AllButtons[1].yPos = 88;
-    AllButtons[1].xSize = 100;
-    AllButtons[1].ySize = 24;
-    AllButtons[1].OnClick = &initControlsSettingsMenu;
-    AllButtons[1].xTextPos = 20;
-    AllButtons[1].yTextPos = 12;
-    AllButtons[1].text = "Controls";
-
-    AllButtons[2].xPos = 140;
-    AllButtons[2].yPos = 137;
-    AllButtons[2].xSize = 100;
-    AllButtons[2].ySize = 23;
-    AllButtons[2].OnClick = &changeKeyboardMode;
-    AllButtons[2].xTextPos = 21;
-    AllButtons[2].yTextPos = 18;
+    addButton(1, 140, 88, 100, 24, &initControlsSettingsMenu, NULL_PARAMETER, 20, 12, "Controls");
+    addButton(2, 140, 137, 100, 23, &changeKeyboardMode, NULL_PARAMETER, 21, 18, "");
     updateKeyboardModeButton();
 
     AllSliders[0].xPos = 20;
@@ -1711,24 +1638,10 @@ void initQuitMenu()
     setQuitButton(false);
 
     // No button
-    AllButtons[0].xPos = ScreenWidth - 80 - 40;
-    AllButtons[0].yPos = 98;
-    AllButtons[0].xSize = 80;
-    AllButtons[0].ySize = 20;
-    AllButtons[0].OnClick = &initGameMenu;
-    AllButtons[0].xTextPos = 21;
-    AllButtons[0].yTextPos = 13;
-    AllButtons[0].text = "No";
+    addButton(0, ScreenWidth - 120, 90, 80, 20, &initGameMenu, NULL_PARAMETER, 21, 13, "No");
 
     // Yes button
-    AllButtons[1].xPos = 40;
-    AllButtons[1].yPos = 98;
-    AllButtons[1].xSize = 80;
-    AllButtons[1].ySize = 20;
-    AllButtons[1].OnClick = &QuitParty;
-    AllButtons[1].xTextPos = 9;
-    AllButtons[1].yTextPos = 13;
-    AllButtons[1].text = "Yes";
+    addButton(1, 40, 98, 80, 80, 20, &QuitParty, NULL_PARAMETER, 9, 13, "Yes");
 
     SetButtonToShow(2);
 }
@@ -1750,48 +1663,16 @@ void initShopMenu()
 
     lastOpenedMenu = &initShopCategoriesMenu;
 
-    BottomScreenSpritesMaterials[6] = NE_MaterialCreate();
-    Palettes[10] = NE_PaletteCreate();
-    if (ShopCategory < EQUIPMENT)
-        NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], AllGuns[GetSelectedGunShop()].texture, 1);
-    else if (ShopCategory == GRENADES)
-        NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], GetAllGrenades()[GetSelectedGunShop() - GunCount].texture, 1);
-    else if (ShopCategory == EQUIPMENT)
-        NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], GetAllGrenades()[GetSelectedGunShop() - GunCount - shopGrenadeCount].texture, 1);
+    CreateShopMenuNE();
+ 
     setQuitButton(true);
 
     // Buy button
-    AllButtons[0].xPos = 88;
-    AllButtons[0].yPos = 170;
-    AllButtons[0].xSize = 80;
-    AllButtons[0].ySize = 20;
-    AllButtons[0].OnClick = &BuyWeapon;
-    AllButtons[0].parameter = 0;
-    AllButtons[0].xTextPos = 14;
-    AllButtons[0].yTextPos = 22;
-    AllButtons[0].text = "Buy!";
-
+    addButton(0, 88, 170, 80, 20, &BuyWeapon, 0, 14, 22, "Buy!");
     // Left button
-    AllButtons[1].xPos = 48;
-    AllButtons[1].yPos = 170;
-    AllButtons[1].xSize = 30;
-    AllButtons[1].ySize = 20;
-    AllButtons[1].OnClick = &ChangeShopElement;
-    AllButtons[1].parameter = 1;
-    AllButtons[1].xTextPos = 7;
-    AllButtons[1].yTextPos = 22;
-    AllButtons[1].text = "<-";
-
+    addButton(1, 48, 170, 30, 20, &ChangeShopElement, 1, 7, 22, "<-");
     // Right button
-    AllButtons[2].xPos = 88 + 80 + 10;
-    AllButtons[2].yPos = 170;
-    AllButtons[2].xSize = 30;
-    AllButtons[2].ySize = 20;
-    AllButtons[2].OnClick = &ChangeShopElement;
-    AllButtons[2].parameter = 0;
-    AllButtons[2].xTextPos = 23;
-    AllButtons[2].yTextPos = 22;
-    AllButtons[2].text = "->";
+    addButton(2, 178, 170, 30, 20, &ChangeShopElement, 0, 23, 22, "->");
 
     SetButtonToShow(3);
 }
@@ -1822,73 +1703,26 @@ void initControllerMenu()
     Palettes[15] = NE_PaletteCreate();
     NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[8], Palettes[15], (void *)reload_bin, 1);
 
-    int buttonXPosition = 2;
-    int mapButtonXPosition = 2;
-    int mapTextXPosition = 1;
-    int textXPosition = 2;
-    if (isLeftControls)
-    {
-        buttonXPosition = 218; // 256 - 36 - 2
-        mapButtonXPosition = 193;
-        mapTextXPosition = 25;
-        textXPosition = 29;
-    }
+    int buttonXPosition = (isLeftControls) ? 218 : 2;
+    int mapButtonXPosition = (isLeftControls) ? 193 : 2;
+    int mapTextXPosition = (isLeftControls) ? 25 : 1;
+    int textXPosition = (isLeftControls) ? 29 : 2;
 
     // Jump button
-    AllButtons[0].xPos = buttonXPosition;
-    AllButtons[0].yPos = 30;
-    AllButtons[0].xSize = 36;
-    AllButtons[0].ySize = 36;
-    AllButtons[0].OnClick = &SetNeedJump;
-    AllButtons[0].parameter = 0;
-    AllButtons[0].text = "";
+    addButton(0, buttonXPosition, 30, 36, 36, &SetNeedJump, 0, 0, 0, "");
 
     // Reload button
-    AllButtons[1].xPos = buttonXPosition;
-    AllButtons[1].yPos = 72;
-    AllButtons[1].xSize = 36;
-    AllButtons[1].ySize = 36;
-    AllButtons[1].OnClick = &startReloadGun;
-    AllButtons[1].parameter = 0;
-    AllButtons[1].text = "";
+    addButton(1, buttonXPosition, 72, 36, 36, &startReloadGun, 0, 0, 0, "");
 
     // Right button
-    AllButtons[2].xPos = buttonXPosition;
-    AllButtons[2].yPos = 114;
-    AllButtons[2].xSize = 36;
-    AllButtons[2].ySize = 36;
-    AllButtons[2].OnClick = &ChangeGunInInventoryForLocalPlayer;
-    AllButtons[2].parameter = 0;
-    AllButtons[2].xTextPos = textXPosition;
-    AllButtons[2].yTextPos = 16;
-    AllButtons[2].text = ">";
+    addButton(2, buttonXPosition, 114, 36, 36, &ChangeGunInInventoryForLocalPlayer, 0, textXPosition, 16, ">");
 
     // Left button
-    AllButtons[3].xPos = buttonXPosition;
-    AllButtons[3].yPos = 156;
-    AllButtons[3].xSize = 36;
-    AllButtons[3].ySize = 36;
-    AllButtons[3].OnClick = &ChangeGunInInventoryForLocalPlayer;
-    AllButtons[3].parameter = 1;
-    AllButtons[3].xTextPos = textXPosition;
-    AllButtons[3].yTextPos = 21;
-    AllButtons[3].text = "<";
+    addButton(3, buttonXPosition, 156, 36, 36, &ChangeGunInInventoryForLocalPlayer, 1, textXPosition, 21, "<");
 
     // Map button
-    AllButtons[4].xPos = mapButtonXPosition;
-    AllButtons[4].yPos = 2;
-    AllButtons[4].xSize = 36;
-    AllButtons[4].ySize = 20;
-    AllButtons[4].OnClick = &changeMapState;
-    AllButtons[4].parameter = 0;
-    AllButtons[4].xTextPos = mapTextXPosition;
-    AllButtons[4].yTextPos = 1;
-    AllButtons[4].text = "Map";
-    if (currentMap == TUTORIAL)
-        AllButtons[4].isHidden = true;
-    else
-        AllButtons[4].isHidden = false;
-
+    addButton(4, mapButtonXPosition, 2, 36, 20, &changeMapState, 0, mapTextXPosition, 1, "Map");
+    AllButtons[4].isHidden = currentMap == TUTORIAL;
     SetButtonToShow(5);
 }
 
@@ -1920,46 +1754,10 @@ void initMainMenu()
         actionOfUiTimer = SAVE;
     }
 
-    // Single player button
-    AllButtons[0].xPos = 40;
-    AllButtons[0].yPos = 40;
-    AllButtons[0].xSize = ScreenWidth - 80;
-    AllButtons[0].ySize = 24;
-    AllButtons[0].OnClick = &initSelectionMapImageMenu;
-    AllButtons[0].parameter = 0;
-    AllButtons[0].xTextPos = 10;
-    AllButtons[0].yTextPos = 6;
-    AllButtons[0].text = "Single Player";
-
-    // Multiplayer button
-    AllButtons[1].xPos = 40;
-    AllButtons[1].yPos = 87;
-    AllButtons[1].xSize = ScreenWidth - 80;
-    AllButtons[1].ySize = 24;
-    AllButtons[1].OnClick = &initJoinCreatePartyMenu;
-    AllButtons[1].isHidden = false;
-    AllButtons[1].xTextPos = 11;
-    AllButtons[1].yTextPos = 12;
-    AllButtons[1].text = "Multiplayer";
-
-    // Settings button
-    AllButtons[2].xPos = 40;
-    AllButtons[2].yPos = 135;
-    AllButtons[2].xSize = ScreenWidth - 80;
-    AllButtons[2].ySize = 24;
-    AllButtons[2].OnClick = &initSettingsMenu;
-    AllButtons[2].xTextPos = 12;
-    AllButtons[2].yTextPos = 18;
-    AllButtons[2].text = "Settings";
-
-    AllButtons[3].xPos = 76;
-    AllButtons[3].yPos = 170;
-    AllButtons[3].xSize = ScreenWidth - 160;
-    AllButtons[3].ySize = 20;
-    AllButtons[3].OnClick = &initStatsMenu;
-    AllButtons[3].xTextPos = 13;
-    AllButtons[3].yTextPos = 22;
-    AllButtons[3].text = "Stats";
+    addButton(0, 40, 40, ScreenWidth - 80, 24, &initSelectionMapImageMenu, NULL_PARAMETER, 0, 10, 6, "Single Player");
+    addButton(1, 40, 87, ScreenWidth - 80, 24, &initJoinCreatePartyMenu, NULL_PARAMETER, 11, 12, "Multiplayer"); // No params and isHidden = false
+    addButton(2, 40, 135, ScreenWidth - 80, 24, &initSettingsMenu, NULL_PARAMETER, 12, 18, "Settings"); // No params
+    addButton(3, 76, 170, ScreenWidth - 160, 20, &initStatsMenu, NULL_PARAMETER, 13, 22, "Stats") // No params
 
     launchMusic();
 
@@ -2000,14 +1798,7 @@ void initControlsSettingsMenu()
     AllCheckBoxs[0].value = &isLeftControls;
 
     // Set change controls button
-    AllButtons[0].xPos = 140;
-    AllButtons[0].yPos = 40;
-    AllButtons[0].xSize = 100;
-    AllButtons[0].ySize = 32;
-    AllButtons[0].OnClick = &initControlsChangeMenu;
-    AllButtons[0].xTextPos = 17;
-    AllButtons[0].yTextPos = 6;
-    AllButtons[0].text = "";
+    addButton(0, 140, 40, 100, 32, &initControlsChangeMenu, NULL_PARAMETER, 17, 6, "");
 
     AllSliders[0].xPos = 140;
     AllSliders[0].yPos = 148;
@@ -2050,146 +1841,37 @@ void initControlsChangeMenu()
     setQuitButton(true);
 
     // Set change controls button
-    AllButtons[0].xPos = 15;
-    AllButtons[0].yPos = 167;
-    AllButtons[0].xSize = 100;
-    AllButtons[0].ySize = 24;
-    AllButtons[0].OnClick = &changeControlsPage;
-    AllButtons[0].parameter = 1;
-    AllButtons[0].xTextPos = 7;
-    AllButtons[0].yTextPos = 22;
-    AllButtons[0].text = "<-";
-
-    AllButtons[1].xPos = 140;
-    AllButtons[1].yPos = 167;
-    AllButtons[1].xSize = 100;
-    AllButtons[1].ySize = 24;
-    AllButtons[1].OnClick = &changeControlsPage;
-    AllButtons[1].parameter = 0;
-    AllButtons[1].xTextPos = 23;
-    AllButtons[1].yTextPos = 22;
-    AllButtons[1].text = "->";
+    addButton(0, 15, 167, 100, 24, &changeControlsPage, 1, 7, 22, "<-");
+    addButton(1, 140, 167, 100, 24, &changeControlsPage, 0, 23, 22, "->");
 
     // Set change controls button
-    AllButtons[2].xPos = 15;
-    AllButtons[2].yPos = 40;
-    AllButtons[2].xSize = 100;
-    AllButtons[2].ySize = 24;
-    AllButtons[2].OnClick = &startScanForInput;
-    if (controlsPage == 0)
+    switch (controlsPage)
     {
-        AllButtons[2].parameter = FIRE_BUTTON;
-        AllButtons[2].xTextPos = 6;
-        AllButtons[2].yTextPos = 4;
-        AllButtons[2].text = "Fire";
+        case 0:
+            addButton(2, 15, 40, 100, 24, &startScanForInput, FIRE_BUTTON, 6, 4, "Fire");
+            addButton(3, 140, 40, 100, 24, &startScanForInput, JUMP_BUTTON, 22, 4, "Jump");
+            addButton(4, 15, 80, 100, 24, &startScanForInput, LEFT_BUTTON, 4, 9, "Move Left.");
+            addButton(5, 140, 80, 100, 24, &startScanForInput, RIGHT_BUTTON, 19, 9, "Move Right");
+            addButton(6, 15, 120, 100, 24, &startScanForInput, UP_BUTTON, 3, 14, "Move Forward");
+            addButton(7, 140, 120, 100, 24, &startScanForInput, DOWN_BUTTON, 18, 14, "Move Backward");
+            SetButtonToShow(8);
+            break;
+        case 1:
+            addButton(2, 15, 40, 100, 24, &startScanForInput, LOOK_LEFT_BUTTON, 4, 4, "Look Left");
+            addButton(3, 140, 40, 100, 24, &startScanForInput, LOOK_RIGHT_BUTTON, 19, 4, "Look Right");
+            addButton(4, 15, 80, 100, 24, &startScanForInput, LOOK_UP_BUTTON, 5, 9, "Look Up.");
+            addButton(5, 140, 80, 100, 24, &startScanForInput, LOOK_DOWN_BUTTON, 19, 9, "Look Down");
+            addButton(6, 15, 120, 100, 24, &startScanForInput, DEFUSE_BUTTON, 5, 14, "Defuse");
+            addButton(7, 140, 120, 100, 24, &startScanForInput, SCOPE_BUTTON, 21, 14, "Scope");
+            SetButtonToShow(8);
+            break;
+        case 2:
+            addButton(2, 15, 40, 100, 24, &startScanForInput, LEFT_GUN, 1, 4, "Previous Weapon");
+            addButton(3, 140, 40, 100, 24, &startScanForInput, RIGHT_GUN, 18, 4, "Next Weapon");
+            SetButtonToShow(4);
+            break;
 
-        AllButtons[3].parameter = JUMP_BUTTON;
-        AllButtons[3].xTextPos = 22;
-        AllButtons[3].yTextPos = 4;
-        AllButtons[3].text = "Jump";
-
-        AllButtons[4].parameter = LEFT_BUTTON;
-        AllButtons[4].xTextPos = 4;
-        AllButtons[4].yTextPos = 9;
-        AllButtons[4].text = "Move left";
-
-        AllButtons[5].parameter = RIGHT_BUTTON;
-        AllButtons[5].xTextPos = 19;
-        AllButtons[5].yTextPos = 9;
-        AllButtons[5].text = "Move right";
-
-        AllButtons[6].parameter = UP_BUTTON;
-        AllButtons[6].xTextPos = 3;
-        AllButtons[6].yTextPos = 14;
-        AllButtons[6].text = "Move forward";
-
-        AllButtons[7].parameter = DOWN_BUTTON;
-        AllButtons[7].xTextPos = 18;
-        AllButtons[7].yTextPos = 14;
-        AllButtons[7].text = "Move backward";
-
-        SetButtonToShow(8);
     }
-    else if (controlsPage == 1)
-    {
-        AllButtons[2].parameter = LOOK_LEFT_BUTTON;
-        AllButtons[2].xTextPos = 4;
-        AllButtons[2].yTextPos = 4;
-        AllButtons[2].text = "Look left";
-
-        AllButtons[3].parameter = LOOK_RIGHT_BUTTON;
-        AllButtons[3].xTextPos = 19;
-        AllButtons[3].yTextPos = 4;
-        AllButtons[3].text = "Look right";
-
-        AllButtons[4].parameter = LOOK_UP_BUTTON;
-        AllButtons[4].xTextPos = 5;
-        AllButtons[4].yTextPos = 9;
-        AllButtons[4].text = "Look up";
-
-        AllButtons[5].parameter = LOOK_DOWN_BUTTON;
-        AllButtons[5].xTextPos = 19;
-        AllButtons[5].yTextPos = 9;
-        AllButtons[5].text = "Look down";
-
-        AllButtons[6].parameter = DEFUSE_BUTTON;
-        AllButtons[6].xTextPos = 5;
-        AllButtons[6].yTextPos = 14;
-        AllButtons[6].text = "Defuse";
-
-        AllButtons[7].parameter = SCOPE_BUTTON;
-        AllButtons[7].xTextPos = 21;
-        AllButtons[7].yTextPos = 14;
-        AllButtons[7].text = "Scope";
-
-        SetButtonToShow(8);
-    }
-    else if (controlsPage == 2)
-    {
-        AllButtons[2].parameter = LEFT_GUN;
-        AllButtons[2].xTextPos = 1;
-        AllButtons[2].yTextPos = 4;
-        AllButtons[2].text = "Previous weapon";
-
-        AllButtons[3].parameter = RIGHT_GUN;
-        AllButtons[3].xTextPos = 18;
-        AllButtons[3].yTextPos = 4;
-        AllButtons[3].text = "Next weapon";
-
-        SetButtonToShow(4);
-    }
-
-    AllButtons[3].xPos = 140;
-    AllButtons[3].yPos = 40;
-    AllButtons[3].xSize = 100;
-    AllButtons[3].ySize = 24;
-    AllButtons[3].OnClick = &startScanForInput;
-
-    // Set change controls button
-    AllButtons[4].xPos = 15;
-    AllButtons[4].yPos = 80;
-    AllButtons[4].xSize = 100;
-    AllButtons[4].ySize = 24;
-    AllButtons[4].OnClick = &startScanForInput;
-
-    AllButtons[5].xPos = 140;
-    AllButtons[5].yPos = 80;
-    AllButtons[5].xSize = 100;
-    AllButtons[5].ySize = 24;
-    AllButtons[5].OnClick = &startScanForInput;
-
-    // Set change controls button
-    AllButtons[6].xPos = 15;
-    AllButtons[6].yPos = 120;
-    AllButtons[6].xSize = 100;
-    AllButtons[6].ySize = 24;
-    AllButtons[6].OnClick = &startScanForInput;
-
-    AllButtons[7].xPos = 140;
-    AllButtons[7].yPos = 120;
-    AllButtons[7].xSize = 100;
-    AllButtons[7].ySize = 24;
-    AllButtons[7].OnClick = &startScanForInput;
 }
 
 /**
@@ -2216,34 +1898,9 @@ void initSelectionMapImageMenu()
     NE_MaterialTexLoadBMPtoRGB256(BottomScreenSpritesMaterials[6], Palettes[10], allMaps[currentSelectionMap].image, 1);
 
     // Set change controls button
-    AllButtons[0].xPos = 35;
-    AllButtons[0].yPos = 164;
-    AllButtons[0].xSize = 40;
-    AllButtons[0].ySize = 32;
-    AllButtons[0].OnClick = &ChangeMap;
-    AllButtons[0].parameter = 0;
-    AllButtons[0].xTextPos = 6;
-    AllButtons[0].yTextPos = 22;
-    AllButtons[0].text = "<-";
-
-    AllButtons[1].xPos = 256 - 35 - 40;
-    AllButtons[1].yPos = 164;
-    AllButtons[1].xSize = 40;
-    AllButtons[1].ySize = 32;
-    AllButtons[1].OnClick = &ChangeMap;
-    AllButtons[1].parameter = 1;
-    AllButtons[1].xTextPos = 24;
-    AllButtons[1].yTextPos = 22;
-    AllButtons[1].text = "->";
-
-    AllButtons[2].xPos = 256 / 2 - 40;
-    AllButtons[2].yPos = 164;
-    AllButtons[2].xSize = 80;
-    AllButtons[2].ySize = 32;
-    AllButtons[2].OnClick = &AskGameMode;
-    AllButtons[2].xTextPos = 14;
-    AllButtons[2].yTextPos = 22;
-    AllButtons[2].text = "Start";
+    addButton(0, 35, 164, 40, 32, &ChangeMap, 0, 6, 22, "<-");
+    addButton(1, 181, 164, 40, 32, &ChangeMap, 1, 24, 22, "->");
+    addButton(2, 88, 164, 60, 32, &AskGameMode, NULL_PARAMETER, 14, 22, "Start");
 
     SetButtonToShow(3);
 }
@@ -2265,23 +1922,8 @@ void initSelectionMapListMenu()
     setQuitButton(true);
 
     // Set change controls button
-    AllButtons[0].xPos = 40;
-    AllButtons[0].yPos = 40;
-    AllButtons[0].xSize = 100;
-    AllButtons[0].ySize = 32;
-    AllButtons[0].OnClick = &initControlsChangeMenu;
-    AllButtons[0].xTextPos = 5;
-    AllButtons[0].yTextPos = 6;
-    AllButtons[0].text = "<-";
-
-    AllButtons[1].xPos = 140;
-    AllButtons[1].yPos = 40;
-    AllButtons[1].xSize = 100;
-    AllButtons[1].ySize = 32;
-    AllButtons[1].OnClick = &initControlsChangeMenu;
-    AllButtons[1].xTextPos = 17;
-    AllButtons[1].yTextPos = 6;
-    AllButtons[1].text = "->";
+    addButton(0, 40, 40, 100, 32, &initControlsChangeMenu, NULL_PARAMETER, 5, 6, "<-");
+    addButton(1, 140, 40, 100, 32, &initControlsChangeMenu, NULL_PARAMETER, 17, 6, "->");
 
     SetButtonToShow(2);
 }
@@ -2300,27 +1942,11 @@ void initPartyModeSelectionMenu()
     lastOpenedMenu = &initSelectionMapImageMenu;
 
     // Single player button
-    AllButtons[0].xPos = 40;
-    AllButtons[0].yPos = 56;
-    AllButtons[0].xSize = ScreenWidth - 80;
-    AllButtons[0].ySize = 24;
-    AllButtons[0].OnClick = &StartSinglePlayer;
-    AllButtons[0].parameter = 1;
-    AllButtons[0].xTextPos = 13;
-    AllButtons[0].yTextPos = 8;
-    AllButtons[0].text = "Casual";
+    addButton(0, 40, 56, ScreenWidth - 80, 24, &StartSinglePlayer, 1, 13, 8, "Casual");
 
     // Multiplayer button
-    AllButtons[1].xPos = 40;
-    AllButtons[1].yPos = 119;
-    AllButtons[1].xSize = ScreenWidth - 80;
-    AllButtons[1].ySize = 24;
-    AllButtons[1].OnClick = &StartSinglePlayer;
-    AllButtons[1].parameter = 0;
-    AllButtons[1].isHidden = false;
-    AllButtons[1].xTextPos = 11;
-    AllButtons[1].yTextPos = 16;
-    AllButtons[1].text = "Competitive";
+    addButton(1, 40, 119, ScreenWidth - 80, 24, &StartSinglePlayer, 0, 11, 16, "Competitive");
+    // isHidden = false
 
     SetButtonToShow(2);
     setQuitButton(true);
@@ -2343,34 +1969,9 @@ void initJoinCreatePartyMenu()
     setQuitButton(true);
 
     // Set change controls button
-    AllButtons[0].xPos = 36;
-    AllButtons[0].yPos = 44;
-    AllButtons[0].xSize = 190;
-    AllButtons[0].ySize = 32;
-    AllButtons[0].OnClick = &JoinParty;
-    AllButtons[0].parameter = JOIN_RANDOM_PARTY;
-    AllButtons[0].xTextPos = 7;
-    AllButtons[0].yTextPos = 7;
-    AllButtons[0].text = "Join a random party";
-
-    AllButtons[1].xPos = 36;
-    AllButtons[1].yPos = 92;
-    AllButtons[1].xSize = 190;
-    AllButtons[1].ySize = 32;
-    AllButtons[1].OnClick = &initEnterCodeMenu;
-    AllButtons[1].xTextPos = 6;
-    AllButtons[1].yTextPos = 13;
-    AllButtons[1].text = "Join a private party";
-
-    AllButtons[2].xPos = 36;
-    AllButtons[2].yPos = 140;
-    AllButtons[2].xSize = 190;
-    AllButtons[2].ySize = 32;
-    AllButtons[2].OnClick = &JoinParty;
-    AllButtons[2].parameter = CREATE_PRIVATE_PARTY;
-    AllButtons[2].xTextPos = 5;
-    AllButtons[2].yTextPos = 19;
-    AllButtons[2].text = "Create a private party";
+    addButton(0, 36, 44, 190, 32, &JoinParty, JOIN_RANDOM_PARTY, 7, 7, "Join a random party");
+    addButton(1, 36, 92, 190, 32, &initEnterCodeMenu, NULL_PARAMETER, 6, 13, "Join a private party");
+    addButton(2, 36, 140, 190, 32, &JoinParty, CREATE_PRIVATE_PARTY, 5, 19, "Create a private party")
 
     SetButtonToShow(3);
 }
@@ -3162,6 +2763,25 @@ void unloadControlsChangeMenu()
 {
     stopScanForInput();
 }
+
+/**
+ * @brief Initiates a ui button.
+ *
+ */
+void addButton(int buttonIndex, int xPos, int yPos, int xSize, int ySize, void(*function)(), int parameter, int xTextPos, int yTextPos, char* text)
+{
+    AllButtons[buttonIndex].xPos = xPos;
+    AllButtons[buttonIndex].yPos = yPos;
+    AllButtons[buttonIndex].xSize = xSize;
+    AllButtons[buttonIndex].ySize = ySize;
+    AllButtons[buttonIndex].OnClick = function;
+    if (parameter != NULL_PARAMETER) // If the function has a value to pass as a parameter
+        AllButtons[buttonIndex].parameter = parameter;
+    AllButtons[buttonIndex].xTextPos = xTextPos;
+    AllButtons[buttonIndex].yTextPos = yTextPos;
+    AllButtons[buttonIndex].text = text;
+}
+
 /**
  * @brief Creates Nitro Engine materials for shop menu.
  *
