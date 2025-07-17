@@ -1755,9 +1755,9 @@ void initMainMenu()
     }
 
     addButton(0, 40, 40, ScreenWidth - 80, 24, &initSelectionMapImageMenu, NULL_PARAMETER, 0, 10, 6, "Single Player");
-    addButton(1, 40, 87, ScreenWidth - 80, 24, &initJoinCreatePartyMenu, NULL_PARAMETER, 11, 12, "Multiplayer"); // No params and isHidden = false
-    addButton(2, 40, 135, ScreenWidth - 80, 24, &initSettingsMenu, NULL_PARAMETER, 12, 18, "Settings"); // No params
-    addButton(3, 76, 170, ScreenWidth - 160, 20, &initStatsMenu, NULL_PARAMETER, 13, 22, "Stats") // No params
+    addButton(1, 40, 87, ScreenWidth - 80, 24, &initJoinCreatePartyMenu, NULL_PARAMETER, 11, 12, "Multiplayer");
+    addButton(2, 40, 135, ScreenWidth - 80, 24, &initSettingsMenu, NULL_PARAMETER, 12, 18, "Settings");
+    addButton(3, 76, 170, ScreenWidth - 160, 20, &initStatsMenu, NULL_PARAMETER, 13, 22, "Stats");
 
     launchMusic();
 
