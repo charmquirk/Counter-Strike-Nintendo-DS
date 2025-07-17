@@ -23,51 +23,49 @@
 #include <netdb.h>
 
 // Current ping of the nintendo ds
-int ping = 0;
+int ping;
 
 // Socket
-int my_socket = 0;
+int my_socket;
 
 // Retain if the game needs to send a packet
-bool SendPosition = false;
 int SendPositionData = 3;
-bool SendShoot = false;
-bool SendLeave = false;
-bool SendGrenade = false;
-bool SendBombPlacing = false;
-bool SendBombPlace = false;
-bool SendBombDefused = false;
-bool SendPing = false;
-bool SendTeam = false;
-bool WaitForTeamResponse = false;
-bool SendBuyWeapon = false;
-bool SendWallHit = false;
-bool SendSelectedGun = false;
-bool SendPlayerName = false;
-bool SendVoteStartNow = false;
-bool SendKeyResponse = false;
-bool SendGetDroppedBomb = false;
-bool SendReloaded = false;
+bool SendPosition;
+bool SendShoot;
+bool SendLeave;
+bool SendGrenade;
+bool SendBombPlacing;
+bool SendBombPlace;
+bool SendBombDefused;
+bool SendPing;
+bool SendTeam;
+bool WaitForTeamResponse;
+bool SendBuyWeapon;
+bool SendWallHit;
+bool SendSelectedGun;
+bool SendPlayerName;
+bool SendVoteStartNow;
+bool SendKeyResponse;
+bool SendGetDroppedBomb;
+bool SendReloaded;
 
-// Retain if the player is just connected
-bool firstConnection = true;
+bool firstConnection = true; // Retain if the player is just connected
 
-// For security, we need to retain the number of frame showed
-int frameCount = 0;
-// Timeout timer for the connection
-int timeOut = 0;
+int frameCount = 0; // For security, we need to retain the number of frame shown
+int timeOut = 0; // Timeout timer for the connection
 
-// Join type to send to the server
-enum JoinType partyOption = JOIN_RANDOM_PARTY;
+enum JoinType partyOption = JOIN_RANDOM_PARTY; // Join type to send to the server
 
-// Party code to send to the server or to receive from the server
-char partyCode[PARTY_CODE_LENGTH];
+char partyCode[PARTY_CODE_LENGTH]; // Party code to send to the server or to receive from the server
 
-// Is the party private?
-bool isPrivate = false;
+bool isPrivate; // Is the party private?
 
-char Values[1024] = "";     // Store all the values received from the wifi and wainting for treatment
+char Values[1024] = "";     // Store all the values received from the wifi and waiting for treatment
 char TempValues[1024] = ""; // Store values that can't be treated yet
+
+char outgoingData[1024];    // Array of requests to send to the server from this client. For unused networking system.
+char incomingData[1024];    // Array of requests to process on this client. For unused networking system.
+
 
 void initNetwork(int option)
 {
@@ -977,9 +975,7 @@ void ReadServerData()
             // If the recv() returns -1 for too long, the socket has been closed.
             timeOut++;
             if (timeOut == 400)
-            {
                 break;
-            }
         }
 
         if (localPlayer->Id != UNUSED)
@@ -1020,7 +1016,6 @@ void sendDataToServer()
     }
 
     char InfoToSend[1024] = "";
-
     // Send shoot data for sound/animation for clients
     if (SendLeave)
     {
@@ -1186,18 +1181,16 @@ void sendDataToServer()
     }
 
     // Get string data length
-    int InfoLentgh = strlen(InfoToSend);
-    if (InfoLentgh != 0)
-    {
-        // Send the current frame
-        char tmp[20];
-        sprintf(tmp, "{%d;%d}", FRAME, frameCount);
-        send(my_socket, tmp, strlen(tmp), 0); // Send data to server
+    int InfoLength = strlen(InfoToSend);
+    if (InfoLength <= 0)
+        return;
 
-        send(my_socket, InfoToSend, InfoLentgh, 0); // Send data to server
-
-        // sendto(my_socket, InfoToSend, InfoLentgh, 0, (struct sockaddr *)&sain, sizeof(sain)); //UDP
-    }
+    // Send the current frame
+    char tmp[20];
+    sprintf(tmp, "{%d;%d}", FRAME, frameCount);
+    send(my_socket, tmp, strlen(tmp), 0); // Send data to server
+    send(my_socket, InfoToSend, InfoLength, 0); // Send data to server
+    // sendto(my_socket, InfoToSend, InfoLength, 0, (struct sockaddr *)&sain, sizeof(sain)); //UDP
 }
 
 /**
@@ -1240,4 +1233,865 @@ Player *GetPlayer(int id)
             return &AllPlayers[i];
     }
     return NULL;
+}
+
+/**
+ * @brief Queue a request to be sent to and processed by the server
+ *  
+ * @param id Request type
+ * @param data Request data
+ * 
+*/
+void QueueRequest(int type, char* data)
+{
+    char requestString[1024];
+    sprintf(requestString, "%d %d", type, data);
+    outgoingData[sizeof(outgoingData)] = requestString;
+}
+
+/**
+* @brief Collect data from the client to send to the server
+*
+*/
+void SendDataToServer()
+{
+    if (sizeof(outgoingData) <= 0)
+        printf("No queued requests!");
+        return;
+    
+    int outgoingRequestType;           // The number representing the request type
+    char outgoingRequestData[1024];     // The data related to the request.
+    char* endptr;                       // For strtol error checking
+
+    printf("Sending requests to server...");
+    for (int i = 0; i < sizeof(outgoingData), i++)
+    {
+        // Check if the string is too long
+        if (strlen(outgoingData[i]) >= sizeof(outgoingRequestData)) {
+            printf("String %d is too long to process!\n", i);
+            continue;
+        }
+        
+        // Check if the string is too short
+        strncpy(outgoingRequestData, outgoingData[i], sizeof(outgoingRequestData));
+        outgoingRequestData[sizeof(outgoingRequestData)-1] = '\0'; // Ensure null termination
+        if (outgoingRequestData[0] == '\0' || strlen(outgoingRequestData) < 2) {
+            printf("String %d was too short or empty!\n", i);
+            continue;
+        }
+
+        // Check for a valid request type
+        outgoingRequestType = strtol(outgoingRequestData, &endptr, 10);
+        if (endptr == outgoingRequestData) {
+            printf("String %d has no digits!\n", i);
+            continue;
+        }
+
+        send(my_socket, outgoingRequestData, strlen(outgoingRequestData), 0);
+        printf("Sending a request to server! Outgoing Data: %d", outgoingRequestData);
+    }
+    memset(outgoingData, 0, sizeof(outgoingData)); // Clear the outgoing data array
+}
+
+/**
+ * @brief Receive and process data from the server on the client
+ * 
+ */
+void ReceiveDataFromServer()
+{
+    if (sizeof(incomingData) <= 0)
+        printf("No incoming data!");
+        return;
+    
+    int incomingRequestType;            // The number representing the request type
+    char incomingRequestData[1024];     // The data related to the request
+    char* endptr;                       // For strtol error checking
+
+    printf("Reading incoming data from server...");
+    for (int i = 0; i < sizeof(incomingData); i++)
+    {
+        // Ensure we don't overflow our buffer
+        if (strlen(incomingData[i]) >= sizeof(incomingRequestData)) {
+            printf("String %d is too long to process!\n", i);
+            continue;
+        }
+        
+        strncpy(incomingRequestData, incomingData[i], sizeof(incomingRequestData));
+        incomingRequestData[sizeof(incomingRequestData)-1] = '\0'; // Ensure null termination
+
+        if (incomingRequestData[0] == '\0' || strlen(incomingRequestData) < 2) {
+            printf("String %d was too short or empty!\n", i);
+            continue;
+        }
+        
+        incomingRequestType = strtol(incomingRequestData, &endptr, 10);
+        if (endptr == incomingRequestData) {
+            printf("String %d has no digits!\n", i);
+            continue;
+        }
+        
+        switch (incomingRequestType)
+        {
+            case PING: // Get ping request from server
+                ping = intParse(arr[1]); // Parse ping text to int
+                SendPing = true;
+                break;
+            
+            case STPEP:
+                break;
+            
+            case WALLHIT: // Wall hit position update for hit flash at wall animation
+                int flashIndex = 0;
+                for (int i = 0; i < FLASH_MODELS_COUNT; i++)
+                {
+                    if (ShowWallHitFlash[i] == 0)
+                    {
+                        flashIndex = i;
+                        break;
+                    }
+                }
+
+                // Set animation timer
+                ShowWallHitFlash[flashIndex] = 3;
+
+                float XFloat = floatParse(arr[1]);
+                float YFloat = floatParse(arr[2]);
+                float ZFloat = floatParse(arr[3]);
+
+                // Change scale
+                XFloat /= 4096.0;
+                YFloat /= 4096.0;
+                ZFloat /= 4096.0;
+
+                // Set effect position
+                NE_ModelSetCoord(flashModels[flashIndex], XFloat, YFloat, ZFloat);
+
+                // Get wall hit flash direction
+                Vector2 Direction1D;
+                Direction1D.y = YFloat - AllPlayers[CurrentCameraPlayer].position.y - CameraOffsetY + y;
+                Direction1D.x = 1;
+                normalize2D(&Direction1D);
+
+                Vector3 Direction;
+                Direction.x = XFloat - AllPlayers[CurrentCameraPlayer].position.x;
+                Direction.y = YFloat - AllPlayers[CurrentCameraPlayer].position.y;
+                Direction.z = ZFloat - AllPlayers[CurrentCameraPlayer].position.z;
+                normalize(&Direction);
+
+                // Set wall hit angle
+                int FinalAngleY = atan2f(Direction.x, Direction.z) * 512.0 / (M_TWOPI) + 384;
+                int FinalAngleZ = atan2f(Direction1D.y, 1) * 512.0 / (M_TWOPI) + 128;
+                NE_ModelSetRot(flashModels[flashIndex], 0, FinalAngleY, FinalAngleZ);
+
+                // Make 3D sound
+                int Panning, Volume;
+                Vector4 SoundPos;
+                SoundPos.x = XFloat;
+                SoundPos.y = YFloat;
+                SoundPos.z = ZFloat;
+                GetPanningByPosition(&Panning, &Volume, SoundPos, xWithoutYForAudio, zWithoutYForAudio, 0.15);
+                Play3DSound(SFX_RIC, Volume, Panning, NULL);
+                break;
+            
+            case BOMBPLACE: // Bomb place update
+                // Convert chars into ints
+                int XInt = intParse(arr[1]);
+                int YInt = intParse(arr[2]);
+                int ZInt = intParse(arr[3]);
+                int AngleInt = intParse(arr[4]);
+                int dropped = intParse(arr[5]);
+
+                if (dropped)
+                {
+                    // Change values scale and set bomb position and angle value
+                    droppedBombPositionAndRotation.x = XInt / 4096.0;
+                    droppedBombPositionAndRotation.y = YInt / 4096.0;
+                    droppedBombPositionAndRotation.z = ZInt / 4096.0;
+                    droppedBombPositionAndRotation.r = AngleInt;
+
+                    // Set bomb 3D model position and angle value
+                    NE_ModelSetCoord(Model[7], droppedBombPositionAndRotation.x, droppedBombPositionAndRotation.y, droppedBombPositionAndRotation.z);
+                    // NE_ModelSetCoord(Model[10], droppedBombPositionAndRotation.x, droppedBombPositionAndRotation.y, droppedBombPositionAndRotation.z);
+                    Model[7]->rz = droppedBombPositionAndRotation.r;
+
+                    SetBombTakingZone(droppedBombPositionAndRotation.x, droppedBombPositionAndRotation.z, &bombDefuseZone); // Set zone for taking the bomb
+                    bombDropped = true;
+                }
+                else
+                {
+                    // Change values scale and set bomb position and angle value
+                    BombPosition.x = XInt / 4096.0;
+                    BombPosition.y = YInt / 4096.0;
+                    BombPosition.z = ZInt / 4096.0;
+                    BombPosition.r = AngleInt;
+
+                    // Set bomb 3D model position and angle value
+                    NE_ModelSetCoord(Model[7], BombPosition.x, BombPosition.y, BombPosition.z);
+                    NE_ModelSetCoord(Model[10], BombPosition.x, BombPosition.y, BombPosition.z);
+                    Model[7]->rz = BombPosition.r;
+
+                    BombSeconds = allPartyModes[currentPartyMode].bombWaitingSecondsDuration;
+
+                    bombBipTimer = 120;
+                    BombPlanted = true;
+                    SetBombDefuseZone(BombPosition.x, BombPosition.z, &bombDefuseZone);
+                }            
+                break;
+            
+            case BOMBPLACING: // Bomb placing sound
+                int ParsedPlayerId = intParse(arr[1]);
+                int Panning, Volume;
+                GetPanning(ParsedPlayerId, &Panning, &Volume, xWithoutYForAudio, zWithoutYForAudio, 0.10);
+
+                Play3DSound(SFX_BOMBPLANTING, Volume, Panning, GetPlayer(ParsedPlayerId));
+                break;
+            
+            case BOMBDEFUSE: // Bomb defuse sound
+                BombDefused = true;
+                break;
+
+            case CURGUN: // Set current gun in inventory
+                int PlayerIdInt = intParse(arr[1]);
+
+                // Find player to set health
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id != PlayerIdInt)
+                        continue; // Skip player
+                    
+                    int newGun = intParse(arr[2]);
+                    AllPlayers[i].currentGunInInventory = newGun;
+                    if (i == CurrentCameraPlayer)
+                        UpdateGunTexture();
+
+                    break;
+                }
+                break;
+            
+            case LEAVE: // When a player leave
+                // Get player id
+                int ParsedPlayerId = intParse(arr[1]);
+
+                // Find player
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id != ParsedPlayerId)
+                        continue; // Skip player
+                    
+                    AllPlayers[i].Id = UNUSED;
+                    PlayerCount--;
+                    NE_ModelDelete(AllPlayers[i].PlayerModel);
+                    if (i == 0)
+                    {
+                        NE_PhysicsDelete(AllPlayers[i].PlayerPhysic);
+                    }
+                    else
+                    {
+                        showDisconnectedText(i);
+                    }
+                    AllPlayers[i].KillCount = 0;
+                    AllPlayers[i].Team = SPECTATOR;
+                    AllPlayers[i].DeathCount = 0;
+                    if (currentMenu == SCORE_BOARD)
+                        initScoreMenu();
+
+                    if (CurrentCameraPlayer == i)
+                    {
+                        SetCurrentCameraPlayer(0);
+                    }
+
+                    break;
+                }
+                break;
+            
+            case VOTE:
+                break;
+            
+            case GRENADE:
+                // Convert chars into ints
+                float XDirection = floatParse(arr[1]);
+                float YDirection = floatParse(arr[2]);
+                float ZDirection = floatParse(arr[3]);
+                int XInt = intParse(arr[4]);
+                int YInt = intParse(arr[5]);
+                int ZInt = intParse(arr[6]);
+                int GrenadeType = intParse(arr[7]);
+
+                PhysicalGrenade *newGrenade = CreateGrenade(GrenadeType, 0);
+                if (newGrenade != NULL)
+                {
+                    lanchGrenade(newGrenade, XDirection, YDirection, ZDirection, XInt, YInt, ZInt);
+                }
+                break;  
+                                                                                           
+            case POS: // Update player position
+                int PlayerIdInt = intParse(arr[1]); // Get target player id
+
+                float XFloat = floatParse(arr[2]);
+                float YFloat = floatParse(arr[3]);
+                float ZFloat = floatParse(arr[4]);
+                // Change scale
+                XFloat /= 4096.0;
+                YFloat /= 4096.0;
+                ZFloat /= 4096.0;
+
+                int AngleInt = intParse(arr[5]);
+                int CameraAngleInt = intParse(arr[6]);
+
+                // If new position is for the local player
+                if (localPlayer->Id == PlayerIdInt)
+                {
+                    // Set new position and teleport player
+                    localPlayer->position.x = XFloat;
+                    localPlayer->position.y = YFloat;
+                    localPlayer->position.z = ZFloat;
+                    localPlayer->Angle = AngleInt;
+                    localPlayer->PlayerPhysic->xspeed = 0;
+                    localPlayer->PlayerPhysic->yspeed = 0;
+                    localPlayer->PlayerPhysic->zspeed = 0;
+                    NE_ModelSetCoord(localPlayer->PlayerModel, localPlayer->position.x, localPlayer->position.y, localPlayer->position.z);
+                    ForceUpdateLookRotation(localPlayer->cameraAngle);
+                }
+                else
+                {
+                    // Find player with unique ID to update his informations
+                    for (int i = 1; i < MaxPlayer; i++)
+                    {
+                        if (AllPlayers[i].Id != PlayerIdInt)
+                            continue; // Skip player
+
+                        // If player has no position, teleport the player to new updated position (0 default position)
+                        if (AllPlayers[i].lerpDestination.x == 0)
+                        {
+                            AllPlayers[i].position.x = XFloat;
+                            AllPlayers[i].position.y = YFloat;
+                            AllPlayers[i].position.z = ZFloat;
+                            AllPlayers[i].Angle = AngleInt;
+                        }
+
+                        // Set player destination
+                        AllPlayers[i].lerpDestination.x = XFloat;
+                        AllPlayers[i].lerpDestination.y = YFloat;
+                        AllPlayers[i].lerpDestination.z = ZFloat;
+
+                        AllPlayers[i].AngleDestination = AngleInt;
+
+                        // if (CurrentCameraPlayer == i)
+                        // CameraAngleY = CameraAngleInt;
+                        AllPlayers[i].cameraAngle = CameraAngleInt;
+                        break;
+                    }
+                }
+                break;
+            
+            case SETNAME: // Get a player name
+                // Get player id
+                int ParsedPlayerId = intParse(arr[1]);
+
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id == ParsedPlayerId)
+                    {
+                        strcpy(AllPlayers[i].name, arr[2]);
+                        if (i != 0 && !firstConnection)
+                            showConnectedText(i);
+                        break;
+                    }
+                }
+
+                // Update screen if team screen is opened
+                if (currentMenu == 2)
+                    UpdateBottomScreenFrameCount += 8;
+                break;
+
+            case SHOOT: // Shoot from a player
+                int ParsedPlayerId = intParse(arr[1]); // Get player id
+                int ParsedGunId = intParse(arr[2]); // Get gun id
+
+                // Make a sound
+                int Panning, Volume;
+                GetPanning(ParsedPlayerId, &Panning, &Volume, xWithoutYForAudio, zWithoutYForAudio, AllGuns[ParsedGunId].MaxSoundDistance);
+                Player *player = NULL;
+                int index = UNUSED;
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id != ParsedPlayerId)
+                        continue; // Skip player
+                    
+                    player = &AllPlayers[i];
+                    index = i;
+                    break;
+            }
+                if (player != NULL)
+                {
+                    if (player->currentGunInInventory == 1 || player->currentGunInInventory == 2)
+                        player->AllAmmoMagazine[player->currentGunInInventory - 1].AmmoCount--;
+
+                    if (CurrentCameraPlayer == index)
+                    {
+                        setGunRecoil(player);
+                    }
+
+                    if (ParsedGunId < GunCount)
+                        Play3DSound(AllGuns[ParsedGunId].gunSound, Volume, Panning, player);
+                }
+                break;
+            
+            case HIT:
+                break;
+            
+            case PARTY:
+                break;
+            
+            case BUY:
+                break;
+            
+            case TEAM: // Change team
+                // Get player id
+                int ParsedPlayerId = intParse(arr[1]);
+
+                // Get Team value
+                int ParsedIsCounter = intParse(arr[2]);
+
+                // Find player and affect new value
+                for (int i = 0; i < MaxPlayer; i++)
+                    if (AllPlayers[i].Id == ParsedPlayerId)
+                    {
+                        AllPlayers[i].Team = ParsedIsCounter;
+                        UpdatePlayerTexture(i);
+                        break;
+                    }
+
+                // Update screen if team screen is opened
+                switch (currentMenu)
+                {
+                    case SCORE_BOARD:
+                        UpdateBottomScreenFrameCount += 8;
+                        break;
+                    case GAME:
+                        initGameMenu();
+                        break;
+                }
+
+                // TODO check this
+                if (localPlayer->Id == ParsedPlayerId)
+                {
+                    if (roundState != TRAINING)
+                        changeCameraPlayerView(false);
+
+                    AllButtons[0].isHidden = ParsedIsCounter == -1;
+                    AllButtons[1].isHidden = false;
+                    AllButtons[2].isHidden = false;
+                    WaitForTeamResponse = false;
+                }
+                break;                
+
+            case KEY:
+                SendKeyResponse = true;
+                serverKey = intParse(arr[1]);
+                break;
+                
+            case SETID: // Add player
+                int ParsedId = intParse(arr[1]);
+
+                // Spawn player
+                AddNewPlayer(ParsedId, true, false);
+                break;
+            
+            case TIMER: // Timer changes. Previously known as "TimerA"
+                // Parse seconds and minutes texts to int
+                PartyMinutes = intParse(arr[1]);
+                PartySeconds = intParse(arr[2]);
+
+                if (firstConnection)
+                    BombSeconds = PartySeconds;
+                break;
+
+            case SETMAP: // Set the map
+                int newMapId = intParse(arr[1]); // Parse map id text to int
+
+                UnLoadMap(currentMap);
+                currentMap = newMapId;
+                LoadMap(currentMap);
+                break;
+
+            case SETMODE: // Set the party mode
+                // Parse mode id text to int
+                currentPartyMode = intParse(arr[1]);
+                break;
+
+            case VOTERESULT: // Get the current vote values
+                int VoteTypeInt = intParse(arr[1]);
+
+                if (VoteTypeInt == 0)
+                {
+                    playerWantToStart = intParse(arr[2]);
+                    playerWantToStartLimite = intParse(arr[3]);
+                }
+                break;
+
+            case CONFIRM: // Confirm shop gun buy, or set player gun from server command
+                // Convert chars into ints
+                int ConfirmTypeInt = intParse(arr[1]);
+                int ConfirmArgumentInt = intParse(arr[2]);
+                int ConfirmInventoryIndexInt = intParse(arr[3]);
+                int ConfirmResultInt = intParse(arr[4]); // 0 Error, 1 Okay
+
+                if (ConfirmTypeInt) // Set gun in inventory
+                {
+                    switch (ConfirmResultInt) // Not finished in source code. Ignore empty entries.
+                    {
+                        case 0: // Error
+                            break;
+                        case 1: // Okay
+                            DisableAim();
+                            SetGunInInventory(ConfirmArgumentInt, ConfirmInventoryIndexInt);
+                            setSelectedGunInInventory(0, ConfirmInventoryIndexInt);
+                            break;
+                        case 2: // Not an error
+                            break;
+                    }
+                }
+                break;
+
+            case SETMONEY: // Set player money
+                // Parse money text to int
+                int ParsedMoney = intParse(arr[1]);
+                setPlayerMoney(0, ParsedMoney);
+                break;
+
+            case SCORE: // Party score changes
+                // Parse scores texts to int
+                CounterScore = intParse(arr[1]);
+                TerroristsScore = intParse(arr[2]);
+
+                // Update screen if team screen is opened
+                if (currentMenu == SCORE_BOARD)
+                    UpdateBottomScreenFrameCount += 8;
+                break;
+
+            case SCRBOARD: // Score board score changes
+                 // Get player id
+                int ParsedPlayerId = intParse(arr[1]);
+
+                // Find player with unique ID to update his informations
+                for (int i = 0; i < MaxPlayer; i++)
+                    if (AllPlayers[i].Id == ParsedPlayerId)
+                    {
+                        AllPlayers[i].KillCount = intParse(arr[2]);
+                        AllPlayers[i].DeathCount = intParse(arr[3]);
+                        break;
+                    }
+
+                // Update screen if team screen is opened
+                if (currentMenu == SCORE_BOARD)
+                    UpdateBottomScreenFrameCount += 8;
+                break;
+
+            case SETSHOPZONE: // Update the shop zone
+                shopDisableTimer = SHOP_DISABLE_TIMER;
+                setShopZone(localPlayer);            
+                break;
+            
+            case PARTYROUND: // Round state changes
+                // Parse text to int
+                int tempRoundState = intParse(arr[1]);
+
+                roundState = tempRoundState;
+
+                // Reset some values on new round
+                if (roundState == WAIT_START)
+                {
+                    onNewRoundStart();
+                    NE_SpriteVisible(TopScreenSprites[0], true);
+
+                    StopReloading(0);
+                    ResetGunsAmmo(0);
+                    if (CurrentCameraPlayer != 0)
+                    {
+                        SetCurrentCameraPlayer(0);
+                    }
+                    for (int i = 0; i < MaxPlayer; i++)
+                        AllPlayers[i].IsDead = FALSE;
+
+                    deathCameraAnimation = 0;
+                    deathCameraYOffset = 0;
+                    redHealthTextCounter = 0;
+                }
+                break;
+
+            case SETHEALTH: // Set player health
+                int PlayerIdInt = intParse(arr[1]);
+
+                // Find player to set health
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id != PlayerIdInt)
+                        continue: // Skip player
+
+                    int newHealth = intParse(arr[2]);
+                    setPlayerHealth(i, newHealth);
+                    AllPlayers[i].armor = intParse(arr[3]);
+
+                    int haveHeadset = intParse(arr[4]);
+                    AllPlayers[i].haveHeadset = haveHeadset;
+                    break;
+                }
+                break;
+                
+            case SETBOMB: // Set/remove the bomb of a player
+                // Get player id
+                int ParsedPlayerId = intParse(arr[1]);
+
+                // Get gun id
+                int haveBomb = intParse(arr[2]);
+
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id == ParsedPlayerId && haveBomb == 1)
+                    {
+                        AllPlayers[i].haveBomb = true;
+                        bombDropped = false;
+                        SetGunInInventoryForNonLocalPlayer(i, 28, 8);
+                    }
+                    else
+                    {
+                        AllPlayers[i].haveBomb = false;
+                        SetGunInInventoryForNonLocalPlayer(i, EMPTY, 8);
+                    }
+                }
+                break;                
+
+            case SETCODE: // Get the party code
+                strcpy(partyCode, arr[1]);
+                isPrivate = true;
+                break;  
+                
+            case HITSOUND: // Make a hit sound
+                int PlayerId = intParse(arr[2]);
+                int HitType = intParse(arr[3]);
+
+                int Panning, Volume;
+                if (PlayerId != localPlayer->Id)
+                    GetPanning(PlayerId, &Panning, &Volume, xWithoutYForAudio, zWithoutYForAudio, 0.10);
+                else
+                {
+                    Panning = 128;
+                    Volume = 255;
+
+                    xOffset = (rand() % ScreenShakeAmount + ScreenShakeMinAmount) / 100.0;
+                    if (rand() % 2 == 0)
+                        xOffset = -xOffset;
+
+                    yOffset = (rand() % ScreenShakeAmount + ScreenShakeMinAmount) / 100.0;
+                    if (rand() % 2 == 0)
+                        yOffset = -yOffset;
+
+                    redHealthTextCounter = 62;
+                }
+
+                Player *player = NULL;
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id == PlayerId)
+                    {
+                        player = &AllPlayers[i];
+                        break;
+                    }
+                }
+
+                switch (HitType)
+                {
+                    case 0:
+                        Play3DSound(SFX_FLESH_IMPACT, Volume, Panning, player); // Check with kevlar
+                        break;
+                    case 1:
+                        Play3DSound(SFX_HEADSHOT1, Volume, Panning, player);
+                        break;
+                    case 2:
+                        Play3DSound(SFX_FLESH_IMPACT, Volume, Panning, player);
+                        break;
+                    default:
+                        Play3DSound(SFX_KNIFE_HIT_PLAYER, Volume, Panning, player);
+                        break;
+                }
+                break;  
+                
+            case ERROR: // Show text from server
+                int errorId = intParse(arr[1]);
+                char* newText;
+                switch (errorId)
+                {
+                    case Ban:
+                        newText = "You are banned!";
+                        break;
+                    case WrongVersion:
+                        newText = "You are using an old version of the game, please update your game.";
+                        break;
+                    case MacAddressMissing:
+                        newText = "Your Nintendo DS doesn't have a MAC address.";
+                        break;
+                    case WrongSecurityKey:
+                        newText = "You are using a modified game.";
+                        break;
+                    case ServerFull:
+                        newText = "The server is currently full, please try again later.";
+                        break;
+                    case ServerStopped:
+                        newText = "The server is currently under maintenance.";
+                        break;
+                    case SaveCorrupted:
+                        newText = "Your save is corrupted.";
+                        break;
+                    case IncorrectCode:
+                        newText = "The code is incorrect.";
+                        break;
+                    case KickTeamKill:
+                        newText = "You have been kicked (Team kill).";
+                        break;
+                    default:
+                        newText = "An error has occurred!";
+                        break;
+                }
+                strcpy(errorText, newText);
+                initOnlineErrorMenu();
+                break;  
+                
+            case TEXT: // Show text from server
+                int ParsedTextId = intParse(arr[1]);
+                showPartyEventText(ParsedTextId);
+                break;  
+                
+            case TEXTPLAYER: // Show text about a player from server
+                int ParsedPlayerId = intParse(arr[1]);
+                int KillerIdInt = intParse(arr[2]);
+                // int TextIdInt = intParse(arr[3]); unused
+
+                int killerPlayerIndex = NO_PLAYER;
+                int killedPlayerIndex = NO_PLAYER;
+
+                if (KillerIdInt != NO_PLAYER)
+                {
+                    // Find player with unique ID to update his informations
+                    for (int i = 0; i < MaxPlayer; i++)
+                    {
+                        if (AllPlayers[i].Id == KillerIdInt)
+                        {
+                            killerPlayerIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (ParsedPlayerId != NO_PLAYER)
+                {
+                    for (int i = 0; i < MaxPlayer; i++)
+                    {
+                        if (AllPlayers[i].Id == ParsedPlayerId)
+                        {
+                            killedPlayerIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (killerPlayerIndex != NO_PLAYER && killerPlayerIndex != NO_PLAYER)
+                    showKillText(killerPlayerIndex, killedPlayerIndex);
+                break;  
+                
+            case ADDRANGE: // Add multiples non local players
+                for (int i = 1; i < SplitCount; i++) // **FIX
+                {
+                    int FoundId = intParse(arr[i]);
+                    AddNewPlayer(FoundId, false, false);
+                }
+                break;  
+                
+            case ENDGAME: // End the party
+                partyFinished = true;
+                initFinalScoreMenu();
+                break;  
+                
+            case ENDUPDATE: // End the update party sequence
+                firstConnection = false;
+                break;  
+                
+            case INVTORY: // Get the inventory of a player
+                int ParsedPlayerId = intParse(arr[1]);
+                int FoundPlayer = UNUSED;
+
+                for (int i = 0; i < MaxPlayer; i++)
+                {
+                    if (AllPlayers[i].Id != ParsedPlayerId)
+                        continue; // Skip player
+
+                    FoundPlayer = i;
+                    for (int i2 = 2; i2 < SplitCount; i2++) // **FIX
+                    {
+                        int FoundGunId = intParse(arr[i2]);
+                        SetGunInInventoryForNonLocalPlayer(i, FoundGunId, i2 - 2);
+                    }
+                    break;
+                }
+                // If the current player camera is looked by the local player, update the gun texture
+                if (FoundPlayer == CurrentCameraPlayer)
+                {
+                    UpdateGunTexture();
+                }           
+                break;
+
+            case GETBOMB:
+                break;
+                
+            case FRAME:
+                break;
+                
+            case RELOADED: // Reload the gun of a player
+                // Get player id
+                int ParsedPlayerId = intParse(arr[1]);
+
+                int Reset = intParse(arr[2]);
+                switch (Reset)
+                {
+                    case 0:
+                    case 1:
+                        ResetGunsAmmo(ParsedPlayerId);
+                        break;
+                    case 2:
+                        int GunId = intParse(arr[4]);
+                        ResetGunAmmo(ParsedPlayerId, GunId);
+                        break;
+                }
+                break;
+                
+            case STATUS:
+                break;
+            
+            case AMMO: // Not previously added as a request type
+                int ParsedPlayerId = intParse(arr[1]);
+                int FoundPlayer = UNUSED;
+                for (int playerIndex = 0; playerIndex < MaxPlayer; playerIndex++)
+                {
+                    if (AllPlayers[playerIndex].Id != ParsedPlayerId)
+                        continue; // Skip player
+
+                    FoundPlayer = playerIndex;
+                    for (int j = 0; j < 2; j++)
+                    {
+                        int AmmoCountInt = intParse(arr[2 + j * 2]);
+                        int TotalAmmoCountInt = intParse(arr[2 + j * 2 + 1]);
+
+                        AllPlayers[FoundPlayer].AllAmmoMagazine[j].AmmoCount = AmmoCountInt;
+                        AllPlayers[FoundPlayer].AllAmmoMagazine[j].TotalAmmoCount = TotalAmmoCountInt;
+                    }
+                    break;
+                }
+                break;
+                            
+            default:
+                printf("Unknown request type: %d\n", incomingRequestType);
+                break;
+        }
+    }
+    memset(incomingData, 0, sizeof(incomingData)); // Clear the incoming data array
 }

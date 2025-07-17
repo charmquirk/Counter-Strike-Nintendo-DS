@@ -61,7 +61,7 @@ enum RequestType
     PARTYROUND,
     SETHEALTH,
     SETBOMB,
-    SETCODE ,
+    SETCODE,
     HITSOUND,
     ERROR,
     TEXT,
@@ -74,6 +74,7 @@ enum RequestType
     FRAME,
     RELOADED,
     STATUS,
+    AMMO,
 };
 
 #define REQUEST_NAME_INDEX 0
@@ -126,5 +127,8 @@ void treatData();
 void sendDataToServer();
 int intParse(char *charToParse);
 float floatParse(char *charToParse);
+void QueueRequest(int type, char* data);
+void SendDataToServer();
+void ReceiveDataFromServer();
 
 #endif // NETWORK_H_
